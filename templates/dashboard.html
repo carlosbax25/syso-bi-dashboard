@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSO Empresarial &amp; Laboratorio Clínico - Dashboard BI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <!-- ========== HEADER ========== -->
+    <header>
+        <img src="{{ url_for('static', filename='LOGO-IPS-SYSO.png') }}" alt="Logo IPS SYSO">
+        <h1>SYSO Empresarial &amp; Laboratorio Clínico - Dashboard BI</h1>
+    </header>
+
+    <main id="dashboard">
+
+        <!-- ========== ERROR MESSAGE ========== -->
+        <div class="error-message hidden" id="error-message">
+            <span class="error-icon">⚠️</span>
+            <span id="error-text">Ha ocurrido un error al cargar los datos.</span>
+        </div>
+
+        <!-- ========== FILTER BAR ========== -->
+        <section class="filter-bar" aria-label="Filtros">
+            <div class="filter-group">
+                <label for="fecha_inicio">Fecha Inicio</label>
+                <input type="date" id="fecha_inicio" name="fecha_inicio">
+            </div>
+            <div class="filter-group">
+                <label for="fecha_fin">Fecha Fin</label>
+                <input type="date" id="fecha_fin" name="fecha_fin">
+            </div>
+            <div class="filter-group">
+                <label>ARL</label>
+                <div class="multi-select" id="ms-arl" data-filter="arl">
+                    <div class="multi-select-trigger" tabindex="0">
+                        <span class="placeholder">Seleccionar ARL...</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Buscar ARL..." aria-label="Buscar ARL">
+                        </div>
+                        <div class="dropdown-items"></div>
+                        <div class="dropdown-actions">
+                            <button type="button" class="btn-select-all">Todas</button>
+                            <button type="button" class="btn-deselect-all">Ninguna</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Tipo de Servicio</label>
+                <div class="multi-select" id="ms-servicio" data-filter="tipo_servicio">
+                    <div class="multi-select-trigger" tabindex="0">
+                        <span class="placeholder">Seleccionar servicio...</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Buscar servicio..." aria-label="Buscar servicio">
+                        </div>
+                        <div class="dropdown-items"></div>
+                        <div class="dropdown-actions">
+                            <button type="button" class="btn-select-all">Todos</button>
+                            <button type="button" class="btn-deselect-all">Ninguno</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Estado</label>
+                <div class="multi-select" id="ms-estado" data-filter="estado">
+                    <div class="multi-select-trigger" tabindex="0">
+                        <span class="placeholder">Seleccionar estado...</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Buscar estado..." aria-label="Buscar estado">
+                        </div>
+                        <div class="dropdown-items"></div>
+                        <div class="dropdown-actions">
+                            <button type="button" class="btn-select-all">Todos</button>
+                            <button type="button" class="btn-deselect-all">Ninguno</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn-filter" id="btn-apply-filters">Aplicar Filtros</button>
+            <button type="button" class="btn-clear" id="btn-clear-filters">Limpiar</button>
+        </section>
+
+        <!-- ========== KPI CARDS ========== -->
+        <section class="kpi-grid" aria-label="Indicadores clave">
+            <article class="kpi-card kpi-clickable" id="kpi-card-ordenes" title="Ver detalle de órdenes">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Total Órdenes</span>
+                    <span class="kpi-value" id="kpi-total-ordenes">0</span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-clickable" id="kpi-card-ingresos" title="Ver desglose de ingresos">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Ingresos Totales</span>
+                    <span class="kpi-value" id="kpi-ingresos">$0</span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-clickable" id="kpi-card-arls" title="Ver detalle por ARL">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">ARLs Activas</span>
+                    <span class="kpi-value" id="kpi-arls">0</span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-clickable" id="kpi-card-cumplimiento" title="Ver análisis de cumplimiento">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Cumplimiento</span>
+                    <span class="kpi-value"><span id="kpi-cumplimiento">0</span><span class="kpi-suffix">%</span></span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-warning kpi-clickable" id="kpi-card-pendientes" title="Ver detalle de pendientes">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Pendientes</span>
+                    <span class="kpi-value" id="kpi-pendientes">0</span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-warning kpi-clickable" id="kpi-card-valor-pendiente" title="Ver detalle de pendientes">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Valor Pendiente</span>
+                    <span class="kpi-value" id="kpi-valor-pendiente">$0</span>
+                </div>
+            </article>
+        </section>
+
+        <!-- ========== CHARTS ========== -->
+        <section class="charts-grid" aria-label="Gráficos">
+            <div class="chart-card">
+                <h3>Órdenes por ARL</h3>
+                <canvas id="chart-ordenes-arl"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Evolución Mensual de Órdenes</h3>
+                <canvas id="chart-ordenes-mes"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Distribución por Tipo de Servicio</h3>
+                <canvas id="chart-servicios"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Ingresos Facturados por ARL</h3>
+                <canvas id="chart-ingresos-arl"></canvas>
+            </div>
+        </section>
+
+        <!-- ========== PENDING ORDERS MODAL ========== -->
+        <div class="modal-overlay hidden" id="modal-pendientes">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>⚠️ Órdenes Pendientes por ARL — Análisis de Gestión</h3>
+                    <div class="modal-header-right">
+                        <span class="table-info" id="pendientes-info"></span>
+                        <button type="button" class="modal-close" id="modal-close-pendientes" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div id="pendientes-container"></div>
+            </div>
+        </div>
+
+        <!-- ========== ORDERS DETAIL MODAL ========== -->
+        <div class="modal-overlay hidden" id="modal-ordenes">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📋 Detalle de Órdenes de Servicio</h3>
+                    <div class="modal-header-right">
+                        <span class="table-info" id="table-info"></span>
+                        <button type="button" class="modal-close" id="modal-close-ordenes" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-column="id">ID <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="fecha">Fecha <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="arl">ARL <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="empresa">Empresa <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="tipo_servicio">Tipo de Servicio <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="cantidad_trabajadores">Trabajadores <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="estado">Estado <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="valor_facturado">Valor Facturado <span class="sort-icon">▲▼</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="pagination">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== DRILL-DOWN MODAL ========== -->
+        <div class="modal-overlay hidden" id="modal-drilldown">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="drilldown-title">Detalle</h3>
+                    <div class="modal-header-right">
+                        <span class="table-info" id="drilldown-info"></span>
+                        <button type="button" class="modal-close" id="modal-close-drilldown" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" id="drilldown-body">
+                    <div class="modal-summary-cards" id="drilldown-summary"></div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Fecha</th><th>ARL</th><th>Empresa</th>
+                                    <th>Tipo de Servicio</th><th>Trabajadores</th><th>Estado</th><th>Valor Facturado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="drilldown-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== INGRESOS MODAL ========== -->
+        <div class="modal-overlay hidden" id="modal-ingresos">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Desglose de Ingresos Facturados</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-ingresos" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" id="ingresos-container"></div>
+            </div>
+        </div>
+
+        <!-- ========== ARLS MODAL ========== -->
+        <div class="modal-overlay hidden" id="modal-arls">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Detalle por ARL</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-arls" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" id="arls-container"></div>
+            </div>
+        </div>
+
+        <!-- ========== CUMPLIMIENTO MODAL ========== -->
+        <div class="modal-overlay hidden" id="modal-cumplimiento">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Análisis de Cumplimiento</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-cumplimiento" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" id="cumplimiento-container"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ========== LOADING OVERLAY ========== -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+</body>
+</html>
