@@ -146,7 +146,7 @@
                 <canvas id="chart-ordenes-arl"></canvas>
             </div>
             <div class="chart-card">
-                <h3>Evolución Mensual de Órdenes</h3>
+                <h3>Evolución Mensual de Órdenes <button type="button" class="btn-proyeccion" id="btn-proyeccion" title="Proyección +6 meses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> +6</button></h3>
                 <canvas id="chart-ordenes-mes"></canvas>
             </div>
             <div class="chart-card">
@@ -156,14 +156,6 @@
             <div class="chart-card">
                 <h3>Ingresos Facturados por ARL</h3>
                 <canvas id="chart-ingresos-arl"></canvas>
-            </div>
-        </section>
-
-        <!-- ========== PROJECTION CHART ========== -->
-        <section class="charts-grid" style="grid-template-columns:1fr" aria-label="Proyección">
-            <div class="chart-card">
-                <h3>Proyección de Ingresos por ARL — Próximos 6 Meses (Regresión Lineal)</h3>
-                <canvas id="chart-proyeccion" style="max-height:280px"></canvas>
             </div>
         </section>
 
@@ -279,6 +271,21 @@
                     </div>
                 </div>
                 <div class="modal-body-scroll" id="cumplimiento-container"></div>
+            </div>
+        </div>
+
+        <!-- ========== PROJECTION MODAL ========== -->
+        <div class="modal-overlay hidden" id="modal-proyeccion">
+            <div class="modal-content" style="max-width:1100px">
+                <div class="modal-header">
+                    <h3>Proyección de Ingresos por ARL — Próximos 6 Meses (Regresión Lineal)</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-proyeccion" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" style="padding:20px;">
+                    <canvas id="chart-proyeccion" style="width:100%;max-height:400px"></canvas>
+                </div>
             </div>
         </div>
 

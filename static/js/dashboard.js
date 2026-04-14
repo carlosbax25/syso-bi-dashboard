@@ -343,7 +343,6 @@ function renderCharts() {
   renderLineChartOrdenesMes(g.ordenes_por_mes || {});
   renderPieChartServicios(g.ordenes_por_servicio || {});
   renderHorizontalBarIngresos(g.ingresos_por_arl || {});
-  renderProyeccionIngresos(state.proyeccion || {});
 }
 
 function renderBarChartOrdenesArl(data) {
@@ -1165,6 +1164,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Valor pendiente → same modal as pendientes
   document.getElementById('kpi-card-valor-pendiente').addEventListener('click', () => openPendientesModal());
 
+  // Projection modal
+  document.getElementById('btn-proyeccion').addEventListener('click', (e) => {
+    e.stopPropagation();
+    renderProyeccionIngresos(state.proyeccion || {});
+    document.getElementById('modal-proyeccion').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  });
+  document.getElementById('modal-close-proyeccion').addEventListener('click', () => {
+    document.getElementById('modal-proyeccion').classList.add('hidden');
+    document.body.style.overflow = '';
+  });
+  document.getElementById('modal-proyeccion').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) { e.currentTarget.classList.add('hidden'); document.body.style.overflow = ''; }
+  });
+
   // Drill-down modal
   document.getElementById('modal-close-drilldown').addEventListener('click', () => closeDrilldown());
   document.getElementById('modal-drilldown').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeDrilldown(); });
@@ -1175,6 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('modal-ingresos').classList.add('hidden');
       document.getElementById('modal-arls').classList.add('hidden');
       document.getElementById('modal-cumplimiento').classList.add('hidden');
+      document.getElementById('modal-proyeccion').classList.add('hidden');
       document.body.style.overflow = '';
     }
   });
