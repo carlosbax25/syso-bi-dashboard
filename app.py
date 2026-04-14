@@ -13,7 +13,7 @@ def create_app(config=None) -> Flask:
     app.config.from_object(config or Config)
 
     # Inyección de dependencias
-    repo = FakeDataRepository(seed=42, num_registros=10000)
+    repo = FakeDataRepository(seed=42, num_registros=26354)
     service = DashboardService(repo)
 
     # Registrar blueprints
