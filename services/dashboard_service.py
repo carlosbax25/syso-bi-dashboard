@@ -71,18 +71,18 @@ class DashboardService:
         return dict(sorted(resultado.items()))
 
     def agrupar_ordenes_por_servicio(self, ordenes: List[Orden]) -> Dict[str, int]:
-        """Agrupa cantidad de órdenes por tipo de servicio. Retorna dict ordenado por clave."""
+        """Agrupa cantidad de órdenes por tipo de servicio. Retorna dict ordenado por cantidad desc."""
         resultado: Dict[str, int] = {}
         for o in ordenes:
             resultado[o.tipo_servicio] = resultado.get(o.tipo_servicio, 0) + 1
-        return dict(sorted(resultado.items()))
+        return dict(sorted(resultado.items(), key=lambda x: x[1], reverse=True))
 
     def agrupar_ingresos_por_arl(self, ordenes: List[Orden]) -> Dict[str, float]:
         """Agrupa ingresos facturados por ARL. Valores redondeados a 2 decimales."""
         resultado: Dict[str, float] = {}
         for o in ordenes:
             resultado[o.arl] = resultado.get(o.arl, 0.0) + o.valor_facturado
-        return {k: round(v, 2) for k, v in sorted(resultado.items())}
+        return {k: round(v, 2) for k, v in sorted(resultado.items(), key=lambda x: x[1], reverse=True)}
 
     def analizar_pendientes_por_arl(self, ordenes: List[Orden]) -> List[Dict[str, Any]]:
         """Analiza órdenes pendientes agrupadas por ARL con días de antigüedad."""

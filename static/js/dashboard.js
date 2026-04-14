@@ -487,8 +487,11 @@ function renderPieChartServicios(data) {
 function renderHorizontalBarIngresos(data) {
   destroyChart('ingresosArl');
   const ctx = document.getElementById('chart-ingresos-arl').getContext('2d');
-  const labels = Object.keys(data);
-  const values = Object.values(data);
+
+  // Sort by value descending and reverse for horizontal bar (bottom-up rendering)
+  const sorted = Object.entries(data).sort((a, b) => a[1] - b[1]);
+  const labels = sorted.map(e => e[0]);
+  const values = sorted.map(e => e[1]);
 
   const BAR_COLORS = [
     '#1F67AE', '#40C0ED', '#A2C462', '#6dd0f2',
