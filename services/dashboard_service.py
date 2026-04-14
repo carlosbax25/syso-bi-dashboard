@@ -134,6 +134,81 @@ class DashboardService:
         """Retorna la lista de ARLs distintas, delegando al repositorio."""
         return self._repo.obtener_arls()
 
+    def proyectar_ingresos_por_arl(self, ordenes: List[Orden], meses_futuro: int = 6) -> Dict[str, Any]:
+        """Proyecta ingresos mensuales por ARL usando regresión lineal simple.
+
+        Retorna datos históricos + proyección para cada ARL.
+        """
+        from datetime import timedelta
+
+        # Agrupar ingresos mensuales por ARL
+        datos_arl: Dict[str, Dict[str, float]] = {}
+        for o in ordenes:
+            mes = o.fecha.strftime('%Y-%m')
+            if o.arl not in datos_arl:
+                datos_arl[o.arl] = {}
+            datos_arl[o.arl][mes] = datos_arl[o.arl].get(mes, 0.0) + o.valor_facturado
+
+        # Obtener todos los meses ordenados
+        todos_meses = sorted(set(
+            mes for arl_data in datos_arl.values() for mes in arl_data
+        ))
+
+        if len(todos_meses) < 2:
+            return {'meses': [], 'series': {}}
+
+        # Generar meses futuros
+        ultimo = todos_meses[-1]
+        y, m = int(ultimo[:4]), int(ultimo[5:])
+        meses_futuros = []
+        for _ in range(meses_futuro):
+            m += 1
+            if m > 12:
+                m = 1
+                y += 1
+            meses_futuros.append(f'{y:04d}-{m:02d}')
+
+        todos_meses_ext = todos_meses + meses_futuros
+
+        # Regresión lineal por ARL
+        series = {}
+        for arl, meses_data in sorted(datos_arl.items()):
+            # Construir serie con 0 para meses sin datos
+            valores = [meses_data.get(mes, 0.0) for mes in todos_meses]
+
+            n = len(valores)
+            x = list(range(n))
+            sum_x = sum(x)
+            sum_y = sum(valores)
+            sum_xy = sum(xi * yi for xi, yi in zip(x, valores))
+            sum_x2 = sum(xi * xi for xi in x)
+
+            denom = n * sum_x2 - sum_x * sum_x
+            if denom == 0:
+                pendiente = 0.0
+                intercepto = sum_y / n if n > 0 else 0.0
+            else:
+                pendiente = (n * sum_xy - sum_x * sum_y) / denom
+                intercepto = (sum_y - pendiente * sum_x) / n
+
+            # Proyectar
+            proyeccion = []
+            for i in range(n, n + meses_futuro):
+                val = max(0, intercepto + pendiente * i)
+                proyeccion.append(round(val, 2))
+
+            series[arl] = {
+                'historico': [round(v, 2) for v in valores],
+                'proyeccion': proyeccion,
+                'pendiente': round(pendiente, 2),
+            }
+
+        return {
+            'meses_historicos': todos_meses,
+            'meses_proyeccion': meses_futuros,
+            'series': series,
+        }
+
     def obtener_tipos_servicio(self) -> List[str]:
         """Retorna la lista de tipos de servicio distintos, delegando al repositorio."""
         return self._repo.obtener_tipos_servicio()

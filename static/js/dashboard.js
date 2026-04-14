@@ -24,6 +24,7 @@ let state = {
   kpis: null,
   graficos: null,
   pendientes: [],
+  proyeccion: {},
   currentPage: 1,
   sortColumn: 'fecha',
   sortAsc: false,
@@ -268,6 +269,7 @@ async function fetchData() {
     state.kpis = data.kpis || { total_ordenes: 0, ingresos_totales: 0, arl_activas: 0, tasa_cumplimiento: 0 };
     state.graficos = data.graficos || {};
     state.pendientes = data.pendientes_por_arl || [];
+    state.proyeccion = data.proyeccion_ingresos || {};
     state.currentPage = 1;
 
     populateFilters(data.filtros_disponibles || {});
@@ -341,6 +343,7 @@ function renderCharts() {
   renderLineChartOrdenesMes(g.ordenes_por_mes || {});
   renderPieChartServicios(g.ordenes_por_servicio || {});
   renderHorizontalBarIngresos(g.ingresos_por_arl || {});
+  renderProyeccionIngresos(state.proyeccion || {});
 }
 
 function renderBarChartOrdenesArl(data) {
@@ -520,6 +523,112 @@ function renderHorizontalBarIngresos(data) {
         x: { beginAtZero: true, ticks: { callback: (v) => formatCurrency(v), font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
         y: { grid: { display: false }, ticks: { font: { size: 10 } } },
       },
+    },
+  });
+}
+
+// ==========================================================================
+// Projection Chart
+// ==========================================================================
+
+function renderProyeccionIngresos(data) {
+  destroyChart('proyeccion');
+  const ctx = document.getElementById('chart-proyeccion');
+  if (!ctx || !data.meses_historicos) return;
+
+  const MESES_NOMBRE = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const formatMes = (k) => {
+    const [y, m] = k.split('-');
+    return `${MESES_NOMBRE[parseInt(m, 10) - 1]} ${y}`;
+  };
+
+  const mesesHist = data.meses_historicos || [];
+  const mesesProy = data.meses_proyeccion || [];
+  const allLabels = [...mesesHist, ...mesesProy].map(formatMes);
+  const series = data.series || {};
+
+  const ARL_COLORS = ['#1F67AE', '#40C0ED', '#A2C462', '#f59e0b', '#8b5cf6', '#ef4444', '#ec4899'];
+  const datasets = [];
+  let colorIdx = 0;
+
+  for (const [arl, arlData] of Object.entries(series)) {
+    const color = ARL_COLORS[colorIdx % ARL_COLORS.length];
+    colorIdx++;
+
+    // Historical line (solid)
+    const histData = [...arlData.historico, ...Array(mesesProy.length).fill(null)];
+    datasets.push({
+      label: arl,
+      data: histData,
+      borderColor: color,
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      tension: 0.3,
+      spanGaps: false,
+    });
+
+    // Projection line (dashed) — starts from last historical point
+    const projData = Array(mesesHist.length - 1).fill(null);
+    projData.push(arlData.historico[arlData.historico.length - 1]); // connect point
+    projData.push(...arlData.proyeccion);
+    datasets.push({
+      label: arl + ' (proyección)',
+      data: projData,
+      borderColor: color,
+      backgroundColor: color + '15',
+      borderWidth: 2,
+      borderDash: [6, 3],
+      pointRadius: 3,
+      pointBackgroundColor: color,
+      pointHoverRadius: 5,
+      tension: 0.3,
+      fill: true,
+      spanGaps: false,
+    });
+  }
+
+  state.charts.proyeccion = new Chart(ctx.getContext('2d'), {
+    type: 'line',
+    data: { labels: allLabels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            boxWidth: 12,
+            padding: 10,
+            font: { size: 10 },
+            filter: (item) => !item.text.includes('(proyección)'),
+          },
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: (c) => `${c.dataset.label}: ${formatCurrency(c.parsed.y)}`,
+          },
+        },
+        datalabels: { display: false },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'Ingresos ($)', font: { size: 10, weight: '600' }, color: '#5a6b7d' },
+          ticks: { callback: (v) => formatCurrency(v), font: { size: 9 } },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 9 }, maxRotation: 45 },
+        },
+      },
+      // Vertical line to separate historical from projection
+      annotation: undefined,
     },
   });
 }

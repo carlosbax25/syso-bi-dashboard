@@ -33,6 +33,7 @@ def init_api(service: DashboardService):
                 'ingresos_por_arl': service.agrupar_ingresos_por_arl(ordenes),
             },
             'pendientes_por_arl': service.analizar_pendientes_por_arl(ordenes),
+            'proyeccion_ingresos': service.proyectar_ingresos_por_arl(ordenes),
             'filtros_disponibles': {
                 'arls': service.obtener_arls(),
                 'tipos_servicio': service.obtener_tipos_servicio(),
