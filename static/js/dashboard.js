@@ -1124,12 +1124,17 @@ function renderArlsModal() {
 
   const COMPLETADOS = new Set(['Ejecutada', 'Soportes Radicados', 'Facturada']);
   const EN_GESTION = new Set(['Recibida', 'Aceptada', 'Programada / Asignada', 'En Ejecución']);
+  const TODOS_ESTADOS = ['Recibida','Aceptada','Rechazada','Programada / Asignada','En Ejecución','Ejecutada','Soportes Radicados','Facturada','Reemplazada','Cancelada'];
 
   const byArl = {};
   ordenes.forEach(o => {
-    if (!byArl[o.arl]) byArl[o.arl] = { total: 0, completadas: 0, enGestion: 0, cerradas: 0, ingresos: 0 };
+    if (!byArl[o.arl]) {
+      byArl[o.arl] = { total: 0, completadas: 0, enGestion: 0, cerradas: 0, ingresos: 0, estados: {} };
+      TODOS_ESTADOS.forEach(e => byArl[o.arl].estados[e] = 0);
+    }
     byArl[o.arl].total++;
     byArl[o.arl].ingresos += o.valor_facturado;
+    if (o.estado in byArl[o.arl].estados) byArl[o.arl].estados[o.estado]++;
     if (COMPLETADOS.has(o.estado)) byArl[o.arl].completadas++;
     else if (EN_GESTION.has(o.estado)) byArl[o.arl].enGestion++;
     else byArl[o.arl].cerradas++;
@@ -1150,7 +1155,8 @@ function renderArlsModal() {
     <div class="modal-summary-card"><span class="ms-value">${tasaGlobalStr}%</span><span class="ms-label">Cumplimiento Global</span></div>
   </div>`;
 
-  html += `<div style="padding:0 20px 20px;"><div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+  // Resumen por categoría
+  html += `<div style="padding:0 20px 12px;"><div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
   <table><thead><tr><th>ARL</th><th style="text-align:center">Total</th><th style="text-align:center">Completadas</th><th style="text-align:center">En Gestión</th><th style="text-align:center">Cerradas</th><th style="text-align:right">Ingresos</th><th style="text-align:center">Cumplimiento</th></tr></thead><tbody>`;
   sorted.forEach(([arl, d]) => {
     const tasa = d.total > 0 ? (d.completadas / d.total * 100) : 0;
@@ -1164,6 +1170,25 @@ function renderArlsModal() {
       <td style="text-align:center;font-weight:700">${tasaStr}%</td></tr>`;
   });
   html += '</tbody></table></div></div>';
+
+  // Desglose por estado real
+  const estadosCortos = ['Recib.','Acept.','Rech.','Prog.','En Ejec.','Ejecut.','Sop. Rad.','Factur.','Reemp.','Cancel.'];
+  html += `<div style="padding:0 20px 20px;"><div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;overflow-x:auto;">
+  <table style="font-size:0.75rem"><thead><tr><th>ARL</th>`;
+  TODOS_ESTADOS.forEach((e, i) => {
+    html += `<th style="text-align:center;padding:8px 6px" title="${e}">${estadosCortos[i]}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+  sorted.forEach(([arl, d]) => {
+    html += `<tr><td style="font-weight:600">${escapeHtml(arl)}</td>`;
+    TODOS_ESTADOS.forEach(e => {
+      const v = d.estados[e] || 0;
+      html += `<td style="text-align:center">${v > 0 ? v : '<span style="color:#d1d5db">-</span>'}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div></div>';
+
   container.innerHTML = html;
 }
 
