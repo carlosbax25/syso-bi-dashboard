@@ -362,37 +362,24 @@ function renderBarChartOrdenesArl(data) {
   const ctx = document.getElementById('chart-ordenes-arl').getContext('2d');
   const labels = Object.keys(data);
 
-  const ESTADO_CONFIG = [
-    { key: 'Recibida',               color: '#94a3b8', label: 'Recibida' },
-    { key: 'Aceptada',               color: '#60a5fa', label: 'Aceptada' },
-    { key: 'Rechazada',              color: '#ef4444', label: 'Rechazada' },
-    { key: 'Programada / Asignada',  color: '#f59e0b', label: 'Programada' },
-    { key: 'En Ejecución',           color: '#fb923c', label: 'En Ejecución' },
-    { key: 'Ejecutada',              color: '#10b981', label: 'Ejecutada' },
-    { key: 'Soportes Radicados',     color: '#14b8a6', label: 'Soportes Rad.' },
-    { key: 'Facturada',              color: '#1F67AE', label: 'Facturada' },
-    { key: 'Reemplazada',            color: '#a78bfa', label: 'Reemplazada' },
-    { key: 'Cancelada',              color: '#dc2626', label: 'Cancelada' },
-  ];
+  const enGestion = labels.map(arl => (data[arl] && data[arl].en_gestion) || 0);
+  const completadas = labels.map(arl => (data[arl] && data[arl].completada) || 0);
+  const cerradas = labels.map(arl => (data[arl] && data[arl].cerrada) || 0);
 
-  const datasets = ESTADO_CONFIG.map(ec => ({
-    label: ec.label,
-    data: labels.map(arl => (data[arl] && data[arl][ec.key]) || 0),
-    backgroundColor: ec.color,
-    borderRadius: 1,
-    maxBarThickness: 50,
-  }));
+  const datasets = [
+    { label: 'En Gestión', data: enGestion, backgroundColor: '#f59e0b', borderRadius: 2, maxBarThickness: 50 },
+    { label: 'Completadas', data: completadas, backgroundColor: '#10b981', borderRadius: 2, maxBarThickness: 50 },
+    { label: 'Cerradas', data: cerradas, backgroundColor: '#ef4444', borderRadius: 2, maxBarThickness: 50 },
+  ];
 
   state.charts.ordenesArl = new Chart(ctx, {
     type: 'bar',
     data: { labels, datasets },
-      ],
-    },
     plugins: [ChartDataLabels],
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { display: true, position: 'top', labels: { boxWidth: 10, padding: 8, font: { size: 9, weight: '500' }, usePointStyle: true, pointStyle: 'rectRounded' } },
+        legend: { display: true, position: 'top', labels: { boxWidth: 12, padding: 14, font: { size: 10, weight: '600' }, usePointStyle: true, pointStyle: 'rectRounded' } },
         tooltip: { mode: 'index', intersect: false, callbacks: {
           footer: (items) => {
             const total = items.reduce((s, i) => s + i.parsed.y, 0);
@@ -858,14 +845,16 @@ function setupChartDrilldown() {
     const idx = points[0].index;
     const dsIdx = points[0].datasetIndex;
     const arl = chart.data.labels[idx];
-    const ESTADO_KEYS = [
-      'Recibida', 'Aceptada', 'Rechazada', 'Programada / Asignada',
-      'En Ejecución', 'Ejecutada', 'Soportes Radicados',
-      'Facturada', 'Reemplazada', 'Cancelada',
-    ];
-    const estado = ESTADO_KEYS[dsIdx];
-    const filtered = state.ordenes.filter(o => o.arl === arl && o.estado === estado);
-    openDrilldown(`${arl} — ${estado}`, filtered);
+    const categoriaMap = ['en_gestion', 'completada', 'cerrada'];
+    const categoriaLabels = {'en_gestion': 'En Gestión', 'completada': 'Completadas', 'cerrada': 'Cerradas'};
+    const categoria = categoriaMap[dsIdx];
+    const completados = new Set(['Ejecutada', 'Soportes Radicados', 'Facturada']);
+    const enGestion = new Set(['Recibida', 'Aceptada', 'Programada / Asignada', 'En Ejecución']);
+    let filtered;
+    if (categoria === 'completada') filtered = state.ordenes.filter(o => o.arl === arl && completados.has(o.estado));
+    else if (categoria === 'en_gestion') filtered = state.ordenes.filter(o => o.arl === arl && enGestion.has(o.estado));
+    else filtered = state.ordenes.filter(o => o.arl === arl && !completados.has(o.estado) && !enGestion.has(o.estado));
+    openDrilldown(`${arl} — ${categoriaLabels[categoria]}`, filtered);
   };
 
   // Evolución mensual — click on a point

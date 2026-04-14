@@ -55,18 +55,19 @@ class DashboardService:
         )
 
     def agrupar_ordenes_por_arl(self, ordenes: List[Orden]) -> Dict[str, Dict[str, int]]:
-        """Agrupa cantidad de órdenes por ARL y estado real."""
-        todos_estados = [
-            'Recibida', 'Aceptada', 'Rechazada', 'Programada / Asignada',
-            'En Ejecución', 'Ejecutada', 'Soportes Radicados',
-            'Facturada', 'Reemplazada', 'Cancelada',
-        ]
+        """Agrupa cantidad de órdenes por ARL en 3 categorías del flujo."""
+        completados = {'Ejecutada', 'Soportes Radicados', 'Facturada'}
+        en_gestion = {'Recibida', 'Aceptada', 'Programada / Asignada', 'En Ejecución'}
         resultado: Dict[str, Dict[str, int]] = {}
         for o in ordenes:
             if o.arl not in resultado:
-                resultado[o.arl] = {e: 0 for e in todos_estados}
-            if o.estado in resultado[o.arl]:
-                resultado[o.arl][o.estado] += 1
+                resultado[o.arl] = {'en_gestion': 0, 'completada': 0, 'cerrada': 0}
+            if o.estado in completados:
+                resultado[o.arl]['completada'] += 1
+            elif o.estado in en_gestion:
+                resultado[o.arl]['en_gestion'] += 1
+            else:
+                resultado[o.arl]['cerrada'] += 1
         return dict(sorted(resultado.items()))
 
     def agrupar_ordenes_por_mes(self, ordenes: List[Orden]) -> Dict[str, int]:

@@ -132,12 +132,11 @@ class TestAgrupaciones:
         service = _make_service()
         result = service.agrupar_ordenes_por_arl(_sample_ordenes())
 
-        # Sura: Ejecutada+Facturada=completada(2), Positiva: Ejecutada=completada(1)+Recibida=en_proceso(1), Colmena: Cancelada=cerrada(1)
-        assert result == {
-            "Colmena Seguros": {"completada": 0, "en_proceso": 0, "cerrada": 1},
-            "Positiva ARL": {"completada": 1, "en_proceso": 1, "cerrada": 0},
-            "Sura ARL": {"completada": 2, "en_proceso": 0, "cerrada": 0},
-        }
+        # Sura: Ejecutada+Facturada=completada(2), Positiva: Ejecutada=completada(1)+Recibida=en_gestion(1), Colmena: Cancelada=cerrada(1)
+        assert result["Sura ARL"] == {"en_gestion": 0, "completada": 2, "cerrada": 0}
+        assert result["Positiva ARL"] == {"en_gestion": 1, "completada": 1, "cerrada": 0}
+        assert result["Colmena Seguros"] == {"en_gestion": 0, "completada": 0, "cerrada": 1}
+        assert list(result.keys()) == sorted(result.keys())
         # Verificar que está ordenado
         assert list(result.keys()) == sorted(result.keys())
 
