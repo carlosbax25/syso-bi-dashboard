@@ -625,6 +625,21 @@ main#dashboard {
   overflow: hidden;
 }
 
+#modal-drilldown .modal-body-scroll {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#modal-drilldown .table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+}
+
+#modal-drilldown #drilldown-pagination {
+  flex-shrink: 0;
+}
+
 #modal-ordenes .table-wrapper {
   flex: 1;
   overflow-y: auto;

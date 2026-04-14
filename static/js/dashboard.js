@@ -799,11 +799,14 @@ function capitalize(str) {
 // Drilldown state for sub-filtering
 let drilldownOrdenes = [];
 let drilldownEstadoFilter = null;
+let drilldownPage = 1;
+const DRILLDOWN_PER_PAGE = 15;
 
 function openDrilldown(title, ordenes) {
   document.getElementById('drilldown-title').textContent = title;
   drilldownOrdenes = ordenes;
   drilldownEstadoFilter = null;
+  drilldownPage = 1;
   renderDrilldownContent();
   document.getElementById('modal-drilldown').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -815,14 +818,24 @@ function renderDrilldownContent() {
     : drilldownOrdenes;
 
   const total = drilldownOrdenes.length;
+  const filteredTotal = ordenes.length;
   const ingresos = ordenes.reduce((s, o) => s + o.valor_facturado, 0);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredTotal / DRILLDOWN_PER_PAGE));
+  if (drilldownPage > totalPages) drilldownPage = totalPages;
+  if (drilldownPage < 1) drilldownPage = 1;
+  const start = (drilldownPage - 1) * DRILLDOWN_PER_PAGE;
+  const pageData = ordenes.slice(start, start + DRILLDOWN_PER_PAGE);
 
   // Count by real estado (always from full set)
   const estadoCount = {};
   drilldownOrdenes.forEach(o => { estadoCount[o.estado] = (estadoCount[o.estado] || 0) + 1; });
   const estadosSorted = Object.entries(estadoCount).sort((a, b) => b[1] - a[1]);
 
-  document.getElementById('drilldown-info').textContent = `${formatNumber(ordenes.length)} de ${formatNumber(total)} registros`;
+  document.getElementById('drilldown-info').textContent = filteredTotal === total
+    ? `${formatNumber(filteredTotal)} registros`
+    : `${formatNumber(filteredTotal)} de ${formatNumber(total)} registros`;
 
   let summaryHtml = `
     <div class="modal-summary-card drilldown-filter-card ${!drilldownEstadoFilter ? 'active' : ''}" data-estado="">
@@ -840,25 +853,46 @@ function renderDrilldownContent() {
 
   document.getElementById('drilldown-summary').innerHTML = summaryHtml;
 
-  // Bind click events on filter cards
   document.querySelectorAll('.drilldown-filter-card').forEach(card => {
     card.addEventListener('click', () => {
-      const estado = card.dataset.estado;
-      drilldownEstadoFilter = estado || null;
+      drilldownEstadoFilter = card.dataset.estado || null;
+      drilldownPage = 1;
       renderDrilldownContent();
     });
   });
 
   const tbody = document.getElementById('drilldown-table-body');
-  if (ordenes.length === 0) {
+  if (pageData.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><p>Sin datos</p></div></td></tr>';
   } else {
-    tbody.innerHTML = ordenes.map(o => `<tr>
+    tbody.innerHTML = pageData.map(o => `<tr>
       <td>${o.id}</td><td>${o.fecha}</td><td>${escapeHtml(o.arl)}</td><td>${escapeHtml(o.empresa)}</td>
       <td>${escapeHtml(o.tipo_servicio)}</td><td class="col-trabajadores">${o.cantidad_trabajadores}</td>
       <td><span class="badge ${badgeClass(o.estado)}">${capitalize(o.estado)}</span></td>
       <td class="col-valor">${formatCurrency(o.valor_facturado)}</td>
     </tr>`).join('');
+  }
+
+  // Pagination controls
+  const pagContainer = document.getElementById('drilldown-pagination');
+  pagContainer.innerHTML = '';
+  if (totalPages > 1) {
+    const prev = createPageButton('« Anterior', drilldownPage > 1, () => { drilldownPage--; renderDrilldownContent(); });
+    pagContainer.appendChild(prev);
+    getPaginationRange(drilldownPage, totalPages).forEach(p => {
+      if (p === '...') {
+        const el = document.createElement('span'); el.className = 'page-info'; el.textContent = '…';
+        pagContainer.appendChild(el);
+      } else {
+        const btn = document.createElement('button');
+        btn.className = 'page-number' + (p === drilldownPage ? ' active' : '');
+        btn.textContent = p;
+        btn.addEventListener('click', () => { drilldownPage = p; renderDrilldownContent(); });
+        pagContainer.appendChild(btn);
+      }
+    });
+    const next = createPageButton('Siguiente »', drilldownPage < totalPages, () => { drilldownPage++; renderDrilldownContent(); });
+    pagContainer.appendChild(next);
   }
 }
 
@@ -1088,21 +1122,24 @@ function renderArlsModal() {
   const ordenes = state.ordenes;
   const container = document.getElementById('arls-container');
 
+  const COMPLETADOS = new Set(['Ejecutada', 'Soportes Radicados', 'Facturada']);
+  const EN_GESTION = new Set(['Recibida', 'Aceptada', 'Programada / Asignada', 'En Ejecución']);
+
   const byArl = {};
   ordenes.forEach(o => {
-    if (!byArl[o.arl]) byArl[o.arl] = { total: 0, completadas: 0, pendientes: 0, canceladas: 0, ingresos: 0 };
+    if (!byArl[o.arl]) byArl[o.arl] = { total: 0, completadas: 0, enGestion: 0, cerradas: 0, ingresos: 0 };
     byArl[o.arl].total++;
     byArl[o.arl].ingresos += o.valor_facturado;
-    if (o.estado === 'completada') byArl[o.arl].completadas++;
-    else if (o.estado === 'pendiente') byArl[o.arl].pendientes++;
-    else byArl[o.arl].canceladas++;
+    if (COMPLETADOS.has(o.estado)) byArl[o.arl].completadas++;
+    else if (EN_GESTION.has(o.estado)) byArl[o.arl].enGestion++;
+    else byArl[o.arl].cerradas++;
   });
 
   const sorted = Object.entries(byArl).sort((a, b) => b[1].total - a[1].total);
 
   const totalOrdenes = ordenes.length;
   const totalIngresos = ordenes.reduce((s, o) => s + o.valor_facturado, 0);
-  const totalComp = ordenes.filter(o => o.estado === 'completada').length;
+  const totalComp = ordenes.filter(o => COMPLETADOS.has(o.estado)).length;
   const tasaGlobal = totalOrdenes > 0 ? (totalComp / totalOrdenes * 100) : 0;
   const tasaGlobalStr = tasaGlobal % 1 === 0 ? tasaGlobal.toFixed(0) : tasaGlobal.toFixed(1);
 
@@ -1114,15 +1151,15 @@ function renderArlsModal() {
   </div>`;
 
   html += `<div style="padding:0 20px 20px;"><div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
-  <table><thead><tr><th>ARL</th><th style="text-align:center">Total</th><th style="text-align:center">Completadas</th><th style="text-align:center">Pendientes</th><th style="text-align:center">Canceladas</th><th style="text-align:right">Ingresos</th><th style="text-align:center">Cumplimiento</th></tr></thead><tbody>`;
+  <table><thead><tr><th>ARL</th><th style="text-align:center">Total</th><th style="text-align:center">Completadas</th><th style="text-align:center">En Gestión</th><th style="text-align:center">Cerradas</th><th style="text-align:right">Ingresos</th><th style="text-align:center">Cumplimiento</th></tr></thead><tbody>`;
   sorted.forEach(([arl, d]) => {
     const tasa = d.total > 0 ? (d.completadas / d.total * 100) : 0;
     const tasaStr = tasa % 1 === 0 ? tasa.toFixed(0) : tasa.toFixed(1);
     html += `<tr><td style="font-weight:600">${escapeHtml(arl)}</td>
       <td style="text-align:center">${d.total}</td>
-      <td style="text-align:center"><span class="badge badge-completada">${d.completadas}</span></td>
-      <td style="text-align:center"><span class="badge badge-pendiente">${d.pendientes}</span></td>
-      <td style="text-align:center"><span class="badge badge-cancelada">${d.canceladas}</span></td>
+      <td style="text-align:center"><span style="color:#10b981;font-weight:700">${d.completadas}</span></td>
+      <td style="text-align:center"><span style="color:#f59e0b;font-weight:700">${d.enGestion}</span></td>
+      <td style="text-align:center"><span style="color:#ef4444;font-weight:700">${d.cerradas}</span></td>
       <td style="text-align:right;font-variant-numeric:tabular-nums">${formatCurrency(d.ingresos)}</td>
       <td style="text-align:center;font-weight:700">${tasaStr}%</td></tr>`;
   });
@@ -1144,27 +1181,31 @@ function renderCumplimientoModal() {
   const ordenes = state.ordenes;
   const container = document.getElementById('cumplimiento-container');
   const total = ordenes.length;
-  const comp = ordenes.filter(o => o.estado === 'completada').length;
-  const pend = ordenes.filter(o => o.estado === 'pendiente').length;
-  const canc = ordenes.filter(o => o.estado === 'cancelada').length;
+
+  const COMPLETADOS = new Set(['Ejecutada', 'Soportes Radicados', 'Facturada']);
+  const EN_GESTION = new Set(['Recibida', 'Aceptada', 'Programada / Asignada', 'En Ejecución']);
+
+  const comp = ordenes.filter(o => COMPLETADOS.has(o.estado)).length;
+  const enGestion = ordenes.filter(o => EN_GESTION.has(o.estado)).length;
+  const cerradas = total - comp - enGestion;
   const tasa = total > 0 ? (comp / total * 100) : 0;
   const tasaStr = tasa % 1 === 0 ? tasa.toFixed(0) : tasa.toFixed(1);
 
   let html = `<div class="modal-summary-cards">
     <div class="modal-summary-card"><span class="ms-value">${tasaStr}%</span><span class="ms-label">Tasa de Cumplimiento</span></div>
-    <div class="modal-summary-card" style="border-left:3px solid #10b981"><span class="ms-value" style="color:#10b981">${comp}</span><span class="ms-label">Completadas</span></div>
-    <div class="modal-summary-card" style="border-left:3px solid #f59e0b"><span class="ms-value" style="color:#f59e0b">${pend}</span><span class="ms-label">Pendientes</span></div>
-    <div class="modal-summary-card" style="border-left:3px solid #ef4444"><span class="ms-value" style="color:#ef4444">${canc}</span><span class="ms-label">Canceladas</span></div>
+    <div class="modal-summary-card" style="border-left:3px solid #10b981"><span class="ms-value" style="color:#10b981">${formatNumber(comp)}</span><span class="ms-label">Completadas</span></div>
+    <div class="modal-summary-card" style="border-left:3px solid #f59e0b"><span class="ms-value" style="color:#f59e0b">${formatNumber(enGestion)}</span><span class="ms-label">En Gestión</span></div>
+    <div class="modal-summary-card" style="border-left:3px solid #ef4444"><span class="ms-value" style="color:#ef4444">${formatNumber(cerradas)}</span><span class="ms-label">Cerradas</span></div>
   </div>`;
 
   // By ARL
   const byArl = {};
   ordenes.forEach(o => {
-    if (!byArl[o.arl]) byArl[o.arl] = { total: 0, completadas: 0, pendientes: 0, canceladas: 0 };
+    if (!byArl[o.arl]) byArl[o.arl] = { total: 0, completadas: 0, enGestion: 0, cerradas: 0 };
     byArl[o.arl].total++;
-    if (o.estado === 'completada') byArl[o.arl].completadas++;
-    else if (o.estado === 'pendiente') byArl[o.arl].pendientes++;
-    else byArl[o.arl].canceladas++;
+    if (COMPLETADOS.has(o.estado)) byArl[o.arl].completadas++;
+    else if (EN_GESTION.has(o.estado)) byArl[o.arl].enGestion++;
+    else byArl[o.arl].cerradas++;
   });
 
   const sorted = Object.entries(byArl).sort((a, b) => {
@@ -1174,16 +1215,16 @@ function renderCumplimientoModal() {
   });
 
   html += `<div style="padding:0 20px 20px;"><div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
-  <table><thead><tr><th>ARL</th><th style="text-align:center">Total</th><th style="text-align:center">Completadas</th><th style="text-align:center">Pendientes</th><th style="text-align:center">Canceladas</th><th style="text-align:center">Cumplimiento</th><th style="width:30%">Progreso</th></tr></thead><tbody>`;
+  <table><thead><tr><th>ARL</th><th style="text-align:center">Total</th><th style="text-align:center">Completadas</th><th style="text-align:center">En Gestión</th><th style="text-align:center">Cerradas</th><th style="text-align:center">Cumplimiento</th><th style="width:30%">Progreso</th></tr></thead><tbody>`;
   sorted.forEach(([arl, d]) => {
     const t = d.total > 0 ? (d.completadas / d.total * 100) : 0;
     const tStr = t % 1 === 0 ? t.toFixed(0) : t.toFixed(1);
     const barColor = t >= 80 ? '#10b981' : t >= 50 ? '#f59e0b' : '#ef4444';
     html += `<tr><td style="font-weight:600">${escapeHtml(arl)}</td>
       <td style="text-align:center">${d.total}</td>
-      <td style="text-align:center">${d.completadas}</td>
-      <td style="text-align:center">${d.pendientes}</td>
-      <td style="text-align:center">${d.canceladas}</td>
+      <td style="text-align:center"><span style="color:#10b981;font-weight:700">${d.completadas}</span></td>
+      <td style="text-align:center"><span style="color:#f59e0b;font-weight:700">${d.enGestion}</span></td>
+      <td style="text-align:center"><span style="color:#ef4444;font-weight:700">${d.cerradas}</span></td>
       <td style="text-align:center;font-weight:700">${tStr}%</td>
       <td><div style="background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden"><div style="width:${t}%;height:100%;background:${barColor};border-radius:4px;transition:width 0.3s ease"></div></div></td></tr>`;
   });
