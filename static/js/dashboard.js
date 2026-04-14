@@ -796,21 +796,58 @@ function capitalize(str) {
 // Drill-Down Modal (click on chart elements)
 // ==========================================================================
 
+// Drilldown state for sub-filtering
+let drilldownOrdenes = [];
+let drilldownEstadoFilter = null;
+
 function openDrilldown(title, ordenes) {
   document.getElementById('drilldown-title').textContent = title;
+  drilldownOrdenes = ordenes;
+  drilldownEstadoFilter = null;
+  renderDrilldownContent();
+  document.getElementById('modal-drilldown').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
 
-  const total = ordenes.length;
+function renderDrilldownContent() {
+  const ordenes = drilldownEstadoFilter
+    ? drilldownOrdenes.filter(o => o.estado === drilldownEstadoFilter)
+    : drilldownOrdenes;
+
+  const total = drilldownOrdenes.length;
   const ingresos = ordenes.reduce((s, o) => s + o.valor_facturado, 0);
-  const comp = ordenes.filter(o => o.estado === 'completada').length;
-  const tasa = total > 0 ? (comp / total * 100) : 0;
-  const tasaStr = tasa % 1 === 0 ? tasa.toFixed(0) : tasa.toFixed(1);
 
-  document.getElementById('drilldown-info').textContent = `${formatNumber(total)} registros`;
-  document.getElementById('drilldown-summary').innerHTML = `
-    <div class="modal-summary-card"><span class="ms-value">${formatNumber(total)}</span><span class="ms-label">Órdenes</span></div>
-    <div class="modal-summary-card"><span class="ms-value">${formatCurrency(ingresos)}</span><span class="ms-label">Ingresos</span></div>
-    <div class="modal-summary-card"><span class="ms-value">${tasaStr}%</span><span class="ms-label">Cumplimiento</span></div>
-  `;
+  // Count by real estado (always from full set)
+  const estadoCount = {};
+  drilldownOrdenes.forEach(o => { estadoCount[o.estado] = (estadoCount[o.estado] || 0) + 1; });
+  const estadosSorted = Object.entries(estadoCount).sort((a, b) => b[1] - a[1]);
+
+  document.getElementById('drilldown-info').textContent = `${formatNumber(ordenes.length)} de ${formatNumber(total)} registros`;
+
+  let summaryHtml = `
+    <div class="modal-summary-card drilldown-filter-card ${!drilldownEstadoFilter ? 'active' : ''}" data-estado="">
+      <span class="ms-value">${formatNumber(total)}</span><span class="ms-label">Todos</span>
+    </div>
+    <div class="modal-summary-card" style="pointer-events:none"><span class="ms-value">${formatCurrency(ingresos)}</span><span class="ms-label">Ingresos</span></div>`;
+
+  estadosSorted.forEach(([estado, count]) => {
+    const isActive = drilldownEstadoFilter === estado ? ' active' : '';
+    summaryHtml += `<div class="modal-summary-card drilldown-filter-card${isActive}" data-estado="${escapeHtml(estado)}">
+      <span class="ms-value">${formatNumber(count)}</span>
+      <span class="ms-label"><span class="badge ${badgeClass(estado)}" style="font-size:0.6rem;padding:1px 6px">${estado}</span></span>
+    </div>`;
+  });
+
+  document.getElementById('drilldown-summary').innerHTML = summaryHtml;
+
+  // Bind click events on filter cards
+  document.querySelectorAll('.drilldown-filter-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const estado = card.dataset.estado;
+      drilldownEstadoFilter = estado || null;
+      renderDrilldownContent();
+    });
+  });
 
   const tbody = document.getElementById('drilldown-table-body');
   if (ordenes.length === 0) {
@@ -823,9 +860,6 @@ function openDrilldown(title, ordenes) {
       <td class="col-valor">${formatCurrency(o.valor_facturado)}</td>
     </tr>`).join('');
   }
-
-  document.getElementById('modal-drilldown').classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
 }
 
 function closeDrilldown() {
