@@ -137,9 +137,11 @@ class DashboardService:
     def proyectar_ingresos_por_arl(self, ordenes: List[Orden], meses_futuro: int = 6) -> Dict[str, Any]:
         """Proyecta ingresos mensuales por ARL usando regresión lineal simple.
 
-        Retorna datos históricos + proyección para cada ARL.
+        Excluye el mes en curso (incompleto) del cálculo de la regresión.
+        La proyección empieza desde el mes actual.
         """
-        from datetime import timedelta
+        hoy = date.today()
+        mes_actual = hoy.strftime('%Y-%m')
 
         # Agrupar ingresos mensuales por ARL
         datos_arl: Dict[str, Dict[str, float]] = {}
@@ -154,27 +156,27 @@ class DashboardService:
             mes for arl_data in datos_arl.values() for mes in arl_data
         ))
 
-        if len(todos_meses) < 2:
-            return {'meses': [], 'series': {}}
+        # Separar meses completos (para regresión) del mes parcial
+        meses_completos = [m for m in todos_meses if m < mes_actual]
+        mes_parcial = mes_actual if mes_actual in todos_meses else None
 
-        # Generar meses futuros
-        ultimo = todos_meses[-1]
-        y, m = int(ultimo[:4]), int(ultimo[5:])
+        if len(meses_completos) < 2:
+            return {'meses_historicos': [], 'meses_proyeccion': [], 'series': {}}
+
+        # Generar meses futuros empezando desde el mes actual
+        y, m = int(mes_actual[:4]), int(mes_actual[5:])
         meses_futuros = []
         for _ in range(meses_futuro):
+            meses_futuros.append(f'{y:04d}-{m:02d}')
             m += 1
             if m > 12:
                 m = 1
                 y += 1
-            meses_futuros.append(f'{y:04d}-{m:02d}')
 
-        todos_meses_ext = todos_meses + meses_futuros
-
-        # Regresión lineal por ARL
+        # Regresión lineal por ARL (solo meses completos)
         series = {}
         for arl, meses_data in sorted(datos_arl.items()):
-            # Construir serie con 0 para meses sin datos
-            valores = [meses_data.get(mes, 0.0) for mes in todos_meses]
+            valores = [meses_data.get(mes, 0.0) for mes in meses_completos]
 
             n = len(valores)
             x = list(range(n))
@@ -191,7 +193,7 @@ class DashboardService:
                 pendiente = (n * sum_xy - sum_x * sum_y) / denom
                 intercepto = (sum_y - pendiente * sum_x) / n
 
-            # Proyectar
+            # Proyectar desde el mes actual
             proyeccion = []
             for i in range(n, n + meses_futuro):
                 val = max(0, intercepto + pendiente * i)
@@ -204,7 +206,7 @@ class DashboardService:
             }
 
         return {
-            'meses_historicos': todos_meses,
+            'meses_historicos': meses_completos,
             'meses_proyeccion': meses_futuros,
             'series': series,
         }

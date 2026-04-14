@@ -515,7 +515,11 @@ function renderHorizontalBarIngresos(data) {
           font: { size: 9, weight: '600' },
           anchor: 'center',
           align: 'center',
-          formatter: function(value) { return formatCurrency(value); },
+          formatter: function(value, context) {
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const pct = total > 0 ? (value / total * 100).toFixed(0) : 0;
+            return `${formatCurrency(value)}  (${pct}%)`;
+          },
         },
       },
       scales: {
@@ -568,9 +572,9 @@ function renderProyeccionIngresos(data) {
       spanGaps: false,
     });
 
-    // Projection line (dashed) — starts from last historical point
+    // Projection line (dashed) — connects from last historical point
     const projData = Array(mesesHist.length - 1).fill(null);
-    projData.push(arlData.historico[arlData.historico.length - 1]); // connect point
+    projData.push(arlData.historico[arlData.historico.length - 1]); // bridge point
     projData.push(...arlData.proyeccion);
     datasets.push({
       label: arl + ' (proyección)',
@@ -579,9 +583,14 @@ function renderProyeccionIngresos(data) {
       backgroundColor: color + '15',
       borderWidth: 2,
       borderDash: [6, 3],
-      pointRadius: 3,
+      pointRadius: function(context) {
+        // Hide the bridge point (same index as last historical), show only future points
+        return context.dataIndex < mesesHist.length ? 0 : 3;
+      },
       pointBackgroundColor: color,
-      pointHoverRadius: 5,
+      pointHoverRadius: function(context) {
+        return context.dataIndex < mesesHist.length ? 0 : 5;
+      },
       tension: 0.3,
       fill: true,
       spanGaps: false,
@@ -608,6 +617,14 @@ function renderProyeccionIngresos(data) {
         tooltip: {
           mode: 'index',
           intersect: false,
+          filter: function(tooltipItem) {
+            // Hide projection bridge point (last historical index) to avoid duplicates
+            if (tooltipItem.dataset.label && tooltipItem.dataset.label.includes('(proyección)')) {
+              const mesesHistLen = (state.proyeccion.meses_historicos || []).length;
+              return tooltipItem.dataIndex >= mesesHistLen;
+            }
+            return true;
+          },
           callbacks: {
             label: (c) => `${c.dataset.label}: ${formatCurrency(c.parsed.y)}`,
           },
