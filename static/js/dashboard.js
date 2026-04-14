@@ -453,8 +453,8 @@ function renderPieChartServicios(data) {
 
   // Paleta diversa y distinguible — 9 colores para 9 servicios
   const SERVICE_COLORS = [
-    '#1F67AE', '#40C0ED', '#A2C462', '#6dd0f2',
-    '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899'
+    '#1F67AE', '#A2C462', '#40C0ED', '#f59e0b',
+    '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#6dd0f2'
   ];
 
   state.charts.servicios = new Chart(ctx, {

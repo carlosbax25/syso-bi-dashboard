@@ -22,14 +22,10 @@ class FakeDataRepository(BaseRepository):
     _PESOS_ARL = [0.38, 0.32, 0.22, 0.08]
 
     SERVICIOS = [
-        "Medicina Preventiva y del Trabajo", "Seguridad Industrial",
-        "Higiene Industrial", "Laboratorio Clínico",
-        "Pruebas Complementarias", "SPA Empresarial",
-        "Prueba Psicosensométrica", "Vigilancia Epidemiológica",
-        "Psicología",
+        "Asesoría", "Capacitación", "Exámenes",
     ]
 
-    _PESOS_SERVICIO = [0.22, 0.12, 0.08, 0.20, 0.10, 0.04, 0.07, 0.09, 0.08]
+    _PESOS_SERVICIO = [0.25, 0.30, 0.45]
 
     EMPRESAS = [
         "Constructora Bolívar", "Ecopetrol", "Grupo Argos",

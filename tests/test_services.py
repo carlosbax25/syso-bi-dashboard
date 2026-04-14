@@ -28,11 +28,11 @@ class StubRepository(BaseRepository):
 
 def _sample_ordenes() -> List[Orden]:
     return [
-        Orden(1, date(2024, 1, 15), "Sura ARL", "Ecopetrol", "Laboratorio Clínico", 50, "Ejecutada", 1_000_000.0),
-        Orden(2, date(2024, 2, 10), "Positiva ARL", "Alpina", "Psicología", 20, "Recibida", 500_000.0),
-        Orden(3, date(2024, 3, 5), "Sura ARL", "Nutresa", "Seguridad Industrial", 30, "Facturada", 750_000.50),
-        Orden(4, date(2024, 3, 20), "Colmena Seguros", "EPM", "Laboratorio Clínico", 10, "Cancelada", 200_000.0),
-        Orden(5, date(2024, 4, 1), "Positiva ARL", "Bancolombia", "Psicología", 15, "Ejecutada", 350_000.0),
+        Orden(1, date(2024, 1, 15), "Sura ARL", "Ecopetrol", "Exámenes", 50, "Ejecutada", 1_000_000.0),
+        Orden(2, date(2024, 2, 10), "Positiva ARL", "Alpina", "Capacitación", 20, "Recibida", 500_000.0),
+        Orden(3, date(2024, 3, 5), "Sura ARL", "Nutresa", "Asesoría", 30, "Facturada", 750_000.50),
+        Orden(4, date(2024, 3, 20), "Colmena Seguros", "EPM", "Exámenes", 10, "Cancelada", 200_000.0),
+        Orden(5, date(2024, 4, 1), "Positiva ARL", "Bancolombia", "Capacitación", 15, "Ejecutada", 350_000.0),
     ]
 
 
@@ -75,9 +75,9 @@ class TestObtenerOrdenesFiltradas:
 
     def test_filtro_tipos_servicio(self):
         service = _make_service()
-        result = service.obtener_ordenes_filtradas(tipos_servicio=["Psicología"])
+        result = service.obtener_ordenes_filtradas(tipos_servicio=["Capacitación"])
         assert len(result) == 2
-        assert all(o.tipo_servicio == "Psicología" for o in result)
+        assert all(o.tipo_servicio == "Capacitación" for o in result)
 
     def test_filtros_combinados(self):
         service = _make_service()
@@ -85,9 +85,9 @@ class TestObtenerOrdenesFiltradas:
             fecha_inicio=date(2024, 1, 1),
             fecha_fin=date(2024, 3, 31),
             arls=["Sura ARL", "Positiva ARL"],
-            tipos_servicio=["Laboratorio Clínico", "Psicología"],
+            tipos_servicio=["Exámenes", "Capacitación"],
         )
-        # Sura+Lab: orden 1; Positiva+Psico: orden 2
+        # Sura+Exámenes: orden 1; Positiva+Capacitación: orden 2
         assert len(result) == 2
 
     def test_filtro_sin_resultados(self):
@@ -157,11 +157,13 @@ class TestAgrupaciones:
         result = service.agrupar_ordenes_por_servicio(_sample_ordenes())
 
         assert result == {
-            "Laboratorio Clínico": 2,
-            "Psicología": 2,
-            "Seguridad Industrial": 1,
+            "Exámenes": 2,
+            "Capacitación": 2,
+            "Asesoría": 1,
         }
-        assert list(result.keys()) == sorted(result.keys())
+        # Ordered by count descending
+        values = list(result.values())
+        assert values == sorted(values, reverse=True)
 
     def test_agrupar_ingresos_por_arl(self):
         service = _make_service()
@@ -198,4 +200,4 @@ class TestDelegacion:
     def test_obtener_tipos_servicio(self):
         service = _make_service()
         tipos = service.obtener_tipos_servicio()
-        assert tipos == ["Laboratorio Clínico", "Psicología", "Seguridad Industrial"]
+        assert tipos == ["Asesoría", "Capacitación", "Exámenes"]
