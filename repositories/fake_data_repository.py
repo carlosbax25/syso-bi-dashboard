@@ -19,6 +19,8 @@ class FakeDataRepository(BaseRepository):
         "Bolívar ARL", "Seguros Alfa",
     ]
 
+    _PESOS_ARL = [0.38, 0.32, 0.22, 0.08]
+
     SERVICIOS = [
         "Medicina Preventiva y del Trabajo", "Seguridad Industrial",
         "Higiene Industrial", "Laboratorio Clínico",
@@ -64,7 +66,7 @@ class FakeDataRepository(BaseRepository):
             orden = Orden(
                 id=i,
                 fecha=fecha,
-                arl=rng.choice(self.ARLS),
+                arl=rng.choices(self.ARLS, weights=self._PESOS_ARL)[0],
                 empresa=rng.choice(self.EMPRESAS),
                 tipo_servicio=rng.choices(self.SERVICIOS, weights=self._PESOS_SERVICIO)[0],
                 cantidad_trabajadores=rng.randint(1, 200),
