@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPS SYSO - Panel de Gestión</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .gestion-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            height: 64px;
+            background: linear-gradient(135deg, #1F67AE 0%, #2a75be 100%);
+            color: #fff;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .gestion-nav .nav-left { display: flex; align-items: center; gap: 14px; }
+        .gestion-nav img { height: 40px; background: rgba(255,255,255,0.95); padding: 4px 8px; border-radius: 6px; }
+        .gestion-nav h1 { font-size: 1rem; font-weight: 600; }
+        .gestion-nav .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-link {
+            padding: 6px 14px; font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.8);
+            text-decoration: none; border-radius: 6px; transition: all 0.15s ease;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .nav-link.active { background: rgba(255,255,255,0.2); color: #fff; }
+        .btn-logout {
+            padding: 6px 14px; font-size: 0.8rem; font-weight: 600; color: #fff;
+            background: rgba(239,68,68,0.8); border: none; border-radius: 6px;
+            cursor: pointer; transition: all 0.15s ease; font-family: inherit;
+        }
+        .btn-logout:hover { background: #ef4444; }
+</style>
+</head>
+<body>
+    <nav class="gestion-nav">
+        <div class="nav-left">
+            <img src="{{ url_for('static', filename='LOGO-IPS-SYSO.png') }}" alt="Logo">
+            <h1>Panel de Gestión - Órdenes ARL</h1>
+        </div>
+        <div class="nav-right">
+            <a href="{{ url_for('dashboard.index') }}" class="nav-link">Dashboard BI</a>
+            <a href="{{ url_for('gestion.gestion_panel') }}" class="nav-link active">Gestión</a>
+            <form method="POST" action="{{ url_for('auth.logout') }}" style="margin:0">
+                <button type="submit" class="btn-logout">Cerrar Sesión</button>
+            </form>
+        </div>
+    </nav>
+
+    <main id="dashboard" style="padding:24px 32px 48px;max-width:1440px;margin:0 auto;">
+
+        <div class="error-message hidden" id="gestion-msg"></div>
+
+        <!-- Stats -->
+        <div class="kpi-grid" style="margin-bottom:20px;">
+            <article class="kpi-card">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                <div class="kpi-content"><span class="kpi-label">Total Órdenes</span><span class="kpi-value" id="g-total">0</span></div>
+            </article>
+            <article class="kpi-card">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                <div class="kpi-content"><span class="kpi-label">En Gestión</span><span class="kpi-value" id="g-gestion" style="color:#f59e0b">0</span></div>
+            </article>
+            <article class="kpi-card">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                <div class="kpi-content"><span class="kpi-label">Completadas</span><span class="kpi-value" id="g-comp" style="color:#10b981">0</span></div>
+            </article>
+        </div>
+
+        <!-- New Order Form -->
+        <section style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:20px;overflow:hidden;">
+            <div style="padding:14px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+                <h3 style="font-size:0.9rem;font-weight:600;color:#1e2a3a;">Registrar Nueva Orden de Servicio</h3>
+                <button type="button" id="toggle-form" style="font-size:0.75rem;font-weight:600;color:#1F67AE;background:#DFEFF8;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;">Mostrar / Ocultar</button>
+            </div>
+            <div id="form-container" style="display:none;padding:20px;">
+                <form id="orden-form" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+                    <div class="filter-group"><label>Fecha</label><input type="date" name="fecha" required></div>
+                    <div class="filter-group"><label>ARL</label>
+                        <select name="arl" required style="height:38px;padding:0 10px;font-size:0.85rem;border:1px solid #e5e7eb;border-radius:6px;background:#DFEFF8;">
+                            <option value="">Seleccionar...</option>
+                            <option>Sura ARL</option><option>Colmena Seguros</option><option>Bolívar ARL</option><option>Seguros Alfa</option>
+                        </select>
+                    </div>
+                    <div class="filter-group"><label>Empresa</label><input type="text" name="empresa" required placeholder="Nombre empresa" style="height:38px;padding:0 10px;font-size:0.85rem;border:1px solid #e5e7eb;border-radius:6px;background:#DFEFF8;"></div>
+                    <div class="filter-group"><label>Tipo de Servicio</label>
+                        <select name="tipo_servicio" required style="height:38px;padding:0 10px;font-size:0.85rem;border:1px solid #e5e7eb;border-radius:6px;background:#DFEFF8;">
+                            <option value="">Seleccionar...</option>
+                            <option>Asesoría</option><option>Capacitación</option><option>Exámenes</option>
+                        </select>
+                    </div>
+                    <div class="filter-group"><label>Trabajadores</label><input type="number" name="trabajadores" min="1" required placeholder="Cantidad" style="height:38px;padding:0 10px;font-size:0.85rem;border:1px solid #e5e7eb;border-radius:6px;background:#DFEFF8;"></div>
+                    <div class="filter-group"><label>Estado</label>
+                        <select name="estado" required style="height:38px;padding:0 10px;font-size:0.85rem;border:1px solid #e5e7eb;border-radius:6px;background:#DFEFF8;">
+                            <option value="">Seleccionar...</option>
+                            <option>Recibida</option><option>Aceptada</option><option>Rechazada</option>
+                            <option>Programada / Asignada</option><option>En Ejecución</option><option>Ejecutada</option>
+                            <option>Soportes Radicados</option><option>Facturada</option><option>Reemplazada</option><option>Cancelada</option>
+                        </select>
+                    </div>
+                    <div class="filter-group"><label>Valor Facturado</label><input type="number" name="valor" min="0" step="0.01" required placeholder="$0" style="height:38px;padding:0 10px;font-size:0.85rem;border:1px solid #e5e7eb;border-radius:6px;background:#DFEFF8;"></div>
+                    <div class="filter-group" style="display:flex;align-items:flex-end;">
+                        <button type="submit" style="width:100%;height:38px;font-family:inherit;font-size:0.85rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#1F67AE,#40C0ED);border:none;border-radius:6px;cursor:pointer;">Registrar</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Orders Table -->
+        <section class="table-section">
+            <div class="table-header">
+                <h3>Órdenes Registradas</h3>
+                <span class="table-info" id="g-table-info"></span>
+            </div>
+            <div class="table-wrapper" style="max-height:500px;overflow-y:auto;">
+                <table>
+                    <thead><tr>
+                        <th>ID</th><th>Fecha</th><th>ARL</th><th>Empresa</th><th>Servicio</th><th>Trab.</th><th>Estado</th><th>Valor</th>
+                    </tr></thead>
+                    <tbody id="g-table-body"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="g-pagination"></div>
+        </section>
+    </main>
+
+    <script>
+    const G_PER_PAGE = 15;
+    let gPage = 1, gData = [];
+
+    async function loadGestion() {
+        const r = await fetch('/api/datos');
+        const d = await r.json();
+        gData = d.ordenes || [];
+        gData.sort((a,b) => b.fecha.localeCompare(a.fecha));
+        document.getElementById('g-total').textContent = gData.length.toLocaleString('es-CO');
+        const COMP = new Set(['Ejecutada','Soportes Radicados','Facturada']);
+        const GEST = new Set(['Recibida','Aceptada','Programada / Asignada','En Ejecución']);
+        document.getElementById('g-comp').textContent = gData.filter(o=>COMP.has(o.estado)).length.toLocaleString('es-CO');
+        document.getElementById('g-gestion').textContent = gData.filter(o=>GEST.has(o.estado)).length.toLocaleString('es-CO');
+        gPage = 1;
+        renderGTable();
+    }
+
+    function renderGTable() {
+        const total = gData.length;
+        const pages = Math.max(1, Math.ceil(total / G_PER_PAGE));
+        if (gPage > pages) gPage = pages;
+        const start = (gPage-1)*G_PER_PAGE;
+        const rows = gData.slice(start, start+G_PER_PAGE);
+        document.getElementById('g-table-info').textContent = `${start+1}–${start+rows.length} de ${total.toLocaleString('es-CO')}`;
+        const tbody = document.getElementById('g-table-body');
+        const bc = (e) => {
+            const m = {'ejecutada':'badge-ejecutada','facturada':'badge-facturada','soportes radicados':'badge-soportes-radicados','recibida':'badge-recibida','aceptada':'badge-aceptada','programada / asignada':'badge-programada','en ejecución':'badge-en-ejecucion','rechazada':'badge-rechazada','reemplazada':'badge-reemplazada','cancelada':'badge-cancelada'};
+            return m[(e||'').toLowerCase()]||'badge-pendiente';
+        };
+        tbody.innerHTML = rows.map(o=>`<tr>
+            <td>${o.id}</td><td>${o.fecha}</td><td>${o.arl}</td><td>${o.empresa}</td>
+            <td>${o.tipo_servicio}</td><td style="text-align:center">${o.cantidad_trabajadores}</td>
+            <td><span class="badge ${bc(o.estado)}">${o.estado}</span></td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">$${Number(o.valor_facturado).toLocaleString('es-CO',{minimumFractionDigits:0,maximumFractionDigits:0})}</td>
+        </tr>`).join('');
+        // Pagination
+        const pc = document.getElementById('g-pagination');
+        pc.innerHTML = '';
+        if (pages <= 1) return;
+        const mkBtn = (txt,en,fn) => { const b=document.createElement('button'); b.textContent=txt; b.disabled=!en; if(en) b.addEventListener('click',fn); return b; };
+        pc.appendChild(mkBtn('« Ant.',gPage>1,()=>{gPage--;renderGTable();}));
+        for(let i=1;i<=Math.min(pages,7);i++){const b=document.createElement('button');b.className='page-number'+(i===gPage?' active':'');b.textContent=i;b.addEventListener('click',()=>{gPage=i;renderGTable();});pc.appendChild(b);}
+        if(pages>7){const s=document.createElement('span');s.className='page-info';s.textContent=`... ${pages}`;pc.appendChild(s);}
+        pc.appendChild(mkBtn('Sig. »',gPage<pages,()=>{gPage++;renderGTable();}));
+    }
+
+    document.getElementById('toggle-form').addEventListener('click',()=>{
+        const c=document.getElementById('form-container');
+        c.style.display=c.style.display==='none'?'block':'none';
+    });
+
+    document.getElementById('orden-form').addEventListener('submit',(e)=>{
+        e.preventDefault();
+        const msg = document.getElementById('gestion-msg');
+        msg.style.background='#ecfdf5';msg.style.color='#10b981';msg.style.border='1px solid rgba(16,185,129,0.2)';
+        msg.textContent='✓ Orden registrada exitosamente (modo demo — los datos se guardarán en MySQL en producción)';
+        msg.classList.remove('hidden');
+        e.target.reset();
+        setTimeout(()=>msg.classList.add('hidden'),4000);
+    });
+
+    loadGestion();
+    </script>
+</body>
+</html>

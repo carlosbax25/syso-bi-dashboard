@@ -9,9 +9,18 @@
 <body>
 
     <!-- ========== HEADER ========== -->
-    <header>
-        <img src="{{ url_for('static', filename='LOGO-IPS-SYSO.png') }}" alt="Logo IPS SYSO">
-        <h1>IPS SYSO Empresarial &amp; Laboratorio Clínico - Gestión Órdenes ARL Dashboard BI</h1>
+    <header style="justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <img src="{{ url_for('static', filename='LOGO-IPS-SYSO.png') }}" alt="Logo IPS SYSO">
+            <h1>IPS SYSO Empresarial &amp; Laboratorio Clínico - Gestión Órdenes ARL Dashboard BI</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <a href="{{ url_for('dashboard.index') }}" style="padding:5px 12px;font-size:0.78rem;font-weight:600;color:#fff;background:rgba(255,255,255,0.2);border-radius:5px;text-decoration:none;">Dashboard BI</a>
+            <a href="{{ url_for('gestion.gestion_panel') }}" style="padding:5px 12px;font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.8);border-radius:5px;text-decoration:none;">Gestión</a>
+            <form method="POST" action="{{ url_for('auth.logout') }}" style="margin:0;">
+                <button type="submit" style="padding:5px 12px;font-size:0.78rem;font-weight:600;color:#fff;background:rgba(239,68,68,0.8);border:none;border-radius:5px;cursor:pointer;font-family:inherit;">Salir</button>
+            </form>
+        </div>
     </header>
 
     <main id="dashboard">

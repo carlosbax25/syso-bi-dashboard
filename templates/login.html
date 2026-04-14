@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPS SYSO Empresarial - Iniciar Sesión</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body.login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1F67AE 0%, #40C0ED 50%, #A2C462 100%);
+            padding: 20px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-header {
+            background: linear-gradient(135deg, #1F67AE 0%, #2a75be 100%);
+            padding: 32px 40px 28px;
+            text-align: center;
+        }
+        .login-header img {
+            height: 60px;
+            margin-bottom: 14px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            background: rgba(255,255,255,0.95);
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+        .login-header h1 {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .login-header p {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.8rem;
+            font-weight: 400;
+        }
+        .login-body {
+            padding: 32px 40px 40px;
+        }
+        .login-field {
+            margin-bottom: 20px;
+        }
+        .login-field label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #5a6b7d;
+            margin-bottom: 6px;
+        }
+        .login-field input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: #1e2a3a;
+            background: #DFEFF8;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .login-field input:focus {
+            border-color: #40C0ED;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(64,192,237,0.15);
+        }
+        .login-btn {
+            width: 100%;
+            height: 46px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(135deg, #1F67AE 0%, #40C0ED 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+        .login-btn:hover {
+            box-shadow: 0 6px 20px rgba(31,103,174,0.35);
+            transform: translateY(-1px);
+        }
+        .login-btn:active { transform: translateY(0); }
+        .login-error {
+            display: none;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        .login-error.show { display: block; animation: shake 0.3s ease; }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        .login-footer {
+            text-align: center;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 8px;
+        }
+        .login-footer span {
+            font-size: 0.72rem;
+            color: #5a6b7d;
+        }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <div class="login-header">
+            <img src="{{ url_for('static', filename='LOGO-IPS-SYSO.png') }}" alt="Logo IPS SYSO">
+            <h1>IPS SYSO Empresarial</h1>
+            <p>Gestión Órdenes ARL - Dashboard BI</p>
+        </div>
+        <div class="login-body">
+            <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <div class="login-field">
+                    <label for="username">Usuario</label>
+                    <input type="text" id="username" name="username" placeholder="Ingrese su usuario" required autofocus>
+                </div>
+                <div class="login-field">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" required>
+                </div>
+                <button type="submit" class="login-btn">Iniciar Sesión</button>
+            </form>
+            <div class="login-footer">
+                <span>© 2025 SYSO EMPRESARIAL S.A.S.</span>
+            </div>
+        </div>
+    </div>
+    {% if error %}
+    <script>document.getElementById('login-error').classList.add('show');</script>
+    {% endif %}
+</body>
+</html>

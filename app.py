@@ -3,6 +3,8 @@ from flask import Flask, jsonify
 from config import Config
 from controllers.dashboard_controller import dashboard_bp
 from controllers.api_controller import api_bp, init_api
+from controllers.auth_controller import auth_bp
+from controllers.gestion_controller import gestion_bp
 from repositories.fake_data_repository import FakeDataRepository
 from services.dashboard_service import DashboardService
 
@@ -17,7 +19,9 @@ def create_app(config=None) -> Flask:
     service = DashboardService(repo)
 
     # Registrar blueprints
+    app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(gestion_bp)
     init_api(service)
     app.register_blueprint(api_bp)
 
