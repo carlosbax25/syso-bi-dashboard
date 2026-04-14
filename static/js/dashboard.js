@@ -986,13 +986,15 @@ function renderIngresosModal() {
     <div class="modal-summary-card"><span class="ms-value">${formatCurrency(totalIngresos / (ordenes.length || 1))}</span><span class="ms-label">Promedio/Orden</span></div>
   </div>`;
 
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0;"><div>
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 20px 20px;align-items:start;">
+    <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
     <table><thead><tr><th>ARL</th><th style="text-align:right">Ingresos</th><th style="text-align:right">%</th></tr></thead><tbody>`;
   arlSorted.forEach(([arl, val]) => {
     const pct = totalIngresos > 0 ? (val / totalIngresos * 100) : 0;
     html += `<tr><td>${escapeHtml(arl)}</td><td style="text-align:right;font-variant-numeric:tabular-nums">${formatCurrency(val)}</td><td style="text-align:right">${pct.toFixed(1)}%</td></tr>`;
   });
-  html += `</tbody></table></div><div>
+  html += `</tbody></table></div>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
     <table><thead><tr><th>Tipo de Servicio</th><th style="text-align:right">Ingresos</th><th style="text-align:right">%</th></tr></thead><tbody>`;
   servSorted.forEach(([serv, val]) => {
     const pct = totalIngresos > 0 ? (val / totalIngresos * 100) : 0;
@@ -1028,7 +1030,21 @@ function renderArlsModal() {
 
   const sorted = Object.entries(byArl).sort((a, b) => b[1].total - a[1].total);
 
-  let html = `<table><thead><tr><th>ARL</th><th style="text-align:center">Total</th><th style="text-align:center">Completadas</th><th style="text-align:center">Pendientes</th><th style="text-align:center">Canceladas</th><th style="text-align:right">Ingresos</th><th style="text-align:center">Cumplimiento</th></tr></thead><tbody>`;
+  const totalOrdenes = ordenes.length;
+  const totalIngresos = ordenes.reduce((s, o) => s + o.valor_facturado, 0);
+  const totalComp = ordenes.filter(o => o.estado === 'completada').length;
+  const tasaGlobal = totalOrdenes > 0 ? (totalComp / totalOrdenes * 100) : 0;
+  const tasaGlobalStr = tasaGlobal % 1 === 0 ? tasaGlobal.toFixed(0) : tasaGlobal.toFixed(1);
+
+  let html = `<div class="modal-summary-cards">
+    <div class="modal-summary-card"><span class="ms-value">${sorted.length}</span><span class="ms-label">ARLs Activas</span></div>
+    <div class="modal-summary-card"><span class="ms-value">${formatNumber(totalOrdenes)}</span><span class="ms-label">Total Órdenes</span></div>
+    <div class="modal-summary-card"><span class="ms-value">${formatCurrency(totalIngresos)}</span><span class="ms-label">Ingresos Totales</span></div>
+    <div class="modal-summary-card"><span class="ms-value">${tasaGlobalStr}%</span><span class="ms-label">Cumplimiento Global</span></div>
+  </div>`;
+
+  html += `<div style="padding:0 20px 20px;"><div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+  <table><thead><tr><th>ARL</th><th style="text-align:center">Total</th><th style="text-align:center">Completadas</th><th style="text-align:center">Pendientes</th><th style="text-align:center">Canceladas</th><th style="text-align:right">Ingresos</th><th style="text-align:center">Cumplimiento</th></tr></thead><tbody>`;
   sorted.forEach(([arl, d]) => {
     const tasa = d.total > 0 ? (d.completadas / d.total * 100) : 0;
     const tasaStr = tasa % 1 === 0 ? tasa.toFixed(0) : tasa.toFixed(1);
@@ -1040,7 +1056,7 @@ function renderArlsModal() {
       <td style="text-align:right;font-variant-numeric:tabular-nums">${formatCurrency(d.ingresos)}</td>
       <td style="text-align:center;font-weight:700">${tasaStr}%</td></tr>`;
   });
-  html += '</tbody></table>';
+  html += '</tbody></table></div></div>';
   container.innerHTML = html;
 }
 
@@ -1087,7 +1103,8 @@ function renderCumplimientoModal() {
     return ta - tb;
   });
 
-  html += `<table><thead><tr><th>ARL</th><th style="text-align:center">Total</th><th style="text-align:center">Completadas</th><th style="text-align:center">Pendientes</th><th style="text-align:center">Canceladas</th><th style="text-align:center">Cumplimiento</th><th style="width:30%">Progreso</th></tr></thead><tbody>`;
+  html += `<div style="padding:0 20px 20px;"><div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+  <table><thead><tr><th>ARL</th><th style="text-align:center">Total</th><th style="text-align:center">Completadas</th><th style="text-align:center">Pendientes</th><th style="text-align:center">Canceladas</th><th style="text-align:center">Cumplimiento</th><th style="width:30%">Progreso</th></tr></thead><tbody>`;
   sorted.forEach(([arl, d]) => {
     const t = d.total > 0 ? (d.completadas / d.total * 100) : 0;
     const tStr = t % 1 === 0 ? t.toFixed(0) : t.toFixed(1);
@@ -1100,7 +1117,7 @@ function renderCumplimientoModal() {
       <td style="text-align:center;font-weight:700">${tStr}%</td>
       <td><div style="background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden"><div style="width:${t}%;height:100%;background:${barColor};border-radius:4px;transition:width 0.3s ease"></div></div></td></tr>`;
   });
-  html += '</tbody></table>';
+  html += '</tbody></table></div></div>';
   container.innerHTML = html;
 }
 
