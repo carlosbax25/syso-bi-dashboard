@@ -43,7 +43,8 @@ class DashboardService:
         total = len(ordenes)
         ingresos = sum(o.valor_facturado for o in ordenes)
         arls_activas = len(set(o.arl for o in ordenes))
-        completadas = sum(1 for o in ordenes if o.estado == "completada")
+        estados_completados = {'Ejecutada', 'Soportes Radicados', 'Facturada'}
+        completadas = sum(1 for o in ordenes if o.estado in estados_completados)
         tasa = (completadas / total * 100) if total > 0 else 0.0
 
         return KPI(
@@ -54,12 +55,19 @@ class DashboardService:
         )
 
     def agrupar_ordenes_por_arl(self, ordenes: List[Orden]) -> Dict[str, Dict[str, int]]:
-        """Agrupa cantidad de órdenes por ARL y estado. Retorna dict ordenado por clave."""
+        """Agrupa cantidad de órdenes por ARL y categoría de estado."""
+        completados = {'Ejecutada', 'Soportes Radicados', 'Facturada'}
+        en_proceso = {'Recibida', 'Aceptada', 'Programada / Asignada', 'En Ejecución'}
         resultado: Dict[str, Dict[str, int]] = {}
         for o in ordenes:
             if o.arl not in resultado:
-                resultado[o.arl] = {'completada': 0, 'pendiente': 0, 'cancelada': 0}
-            resultado[o.arl][o.estado] = resultado[o.arl].get(o.estado, 0) + 1
+                resultado[o.arl] = {'completada': 0, 'en_proceso': 0, 'cerrada': 0}
+            if o.estado in completados:
+                resultado[o.arl]['completada'] += 1
+            elif o.estado in en_proceso:
+                resultado[o.arl]['en_proceso'] += 1
+            else:
+                resultado[o.arl]['cerrada'] += 1
         return dict(sorted(resultado.items()))
 
     def agrupar_ordenes_por_mes(self, ordenes: List[Orden]) -> Dict[str, int]:
@@ -87,7 +95,8 @@ class DashboardService:
     def analizar_pendientes_por_arl(self, ordenes: List[Orden]) -> List[Dict[str, Any]]:
         """Analiza órdenes pendientes agrupadas por ARL con días de antigüedad."""
         hoy = date.today()
-        pendientes = [o for o in ordenes if o.estado == 'pendiente']
+        pendientes = [o for o in ordenes if o.estado in
+                      {'Recibida', 'Aceptada', 'Programada / Asignada', 'En Ejecución'}]
 
         agrupado: Dict[str, Dict[str, Any]] = {}
         for o in pendientes:

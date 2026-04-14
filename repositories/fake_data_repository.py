@@ -38,8 +38,12 @@ class FakeDataRepository(BaseRepository):
         "Corona", "Postobón", "Familia", "Colcerámica",
     ]
 
-    ESTADOS = ["completada", "pendiente", "cancelada"]
-    _PESOS_ESTADO = [0.65, 0.25, 0.10]
+    ESTADOS = [
+        "Recibida", "Aceptada", "Rechazada", "Programada / Asignada",
+        "En Ejecución", "Ejecutada", "Soportes Radicados",
+        "Facturada", "Reemplazada", "Cancelada",
+    ]
+    _PESOS_ESTADO = [0.05, 0.06, 0.03, 0.08, 0.07, 0.30, 0.12, 0.20, 0.04, 0.05]
 
     def __init__(self, seed: int = 42, num_registros: int = 500):
         self._seed = seed

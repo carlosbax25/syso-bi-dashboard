@@ -825,27 +825,27 @@ tbody td.col-trabajadores {
   border-radius: 50%;
 }
 
-.badge-completada {
+.badge-completada, .badge-ejecutada, .badge-facturada, .badge-soportes-radicados {
   color: var(--status-completada);
   background: var(--status-completada-bg);
 }
-.badge-completada::before {
+.badge-completada::before, .badge-ejecutada::before, .badge-facturada::before, .badge-soportes-radicados::before {
   background: var(--status-completada);
 }
 
-.badge-pendiente {
+.badge-pendiente, .badge-recibida, .badge-aceptada, .badge-programada, .badge-en-ejecucion {
   color: var(--status-pendiente);
   background: var(--status-pendiente-bg);
 }
-.badge-pendiente::before {
+.badge-pendiente::before, .badge-recibida::before, .badge-aceptada::before, .badge-programada::before, .badge-en-ejecucion::before {
   background: var(--status-pendiente);
 }
 
-.badge-cancelada {
+.badge-cancelada, .badge-rechazada, .badge-reemplazada {
   color: var(--status-cancelada);
   background: var(--status-cancelada-bg);
 }
-.badge-cancelada::before {
+.badge-cancelada::before, .badge-rechazada::before, .badge-reemplazada::before {
   background: var(--status-cancelada);
 }
 

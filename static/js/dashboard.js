@@ -220,8 +220,20 @@ function formatCurrency(value) {
 }
 
 function badgeClass(estado) {
-  const map = { completada: 'badge-completada', pendiente: 'badge-pendiente', cancelada: 'badge-cancelada' };
-  return map[(estado || '').toLowerCase()] || '';
+  const e = (estado || '').toLowerCase();
+  const map = {
+    'ejecutada': 'badge-ejecutada',
+    'facturada': 'badge-facturada',
+    'soportes radicados': 'badge-soportes-radicados',
+    'recibida': 'badge-recibida',
+    'aceptada': 'badge-aceptada',
+    'programada / asignada': 'badge-programada',
+    'en ejecución': 'badge-en-ejecucion',
+    'rechazada': 'badge-rechazada',
+    'reemplazada': 'badge-reemplazada',
+    'cancelada': 'badge-cancelada',
+  };
+  return map[e] || 'badge-pendiente';
 }
 
 // ==========================================================================
@@ -351,8 +363,8 @@ function renderBarChartOrdenesArl(data) {
   const labels = Object.keys(data);
 
   const completadas = labels.map(arl => (data[arl] && data[arl].completada) || 0);
-  const pendientes = labels.map(arl => (data[arl] && data[arl].pendiente) || 0);
-  const canceladas = labels.map(arl => (data[arl] && data[arl].cancelada) || 0);
+  const enProceso = labels.map(arl => (data[arl] && data[arl].en_proceso) || 0);
+  const cerradas = labels.map(arl => (data[arl] && data[arl].cerrada) || 0);
 
   state.charts.ordenesArl = new Chart(ctx, {
     type: 'bar',
@@ -360,8 +372,8 @@ function renderBarChartOrdenesArl(data) {
       labels,
       datasets: [
         { label: 'Completadas', data: completadas, backgroundColor: '#10b981', borderRadius: 2, maxBarThickness: 50 },
-        { label: 'Pendientes', data: pendientes, backgroundColor: '#f59e0b', borderRadius: 2, maxBarThickness: 50 },
-        { label: 'Canceladas', data: canceladas, backgroundColor: '#ef4444', borderRadius: 2, maxBarThickness: 50 },
+        { label: 'En Proceso', data: enProceso, backgroundColor: '#f59e0b', borderRadius: 2, maxBarThickness: 50 },
+        { label: 'Cerradas', data: cerradas, backgroundColor: '#ef4444', borderRadius: 2, maxBarThickness: 50 },
       ],
     },
     plugins: [ChartDataLabels],
@@ -834,10 +846,16 @@ function setupChartDrilldown() {
     const idx = points[0].index;
     const dsIdx = points[0].datasetIndex;
     const arl = chart.data.labels[idx];
-    const estadoMap = ['completada', 'pendiente', 'cancelada'];
-    const estado = estadoMap[dsIdx];
-    const filtered = state.ordenes.filter(o => o.arl === arl && o.estado === estado);
-    openDrilldown(`${arl} — ${capitalize(estado)}`, filtered);
+    const estadoMap = ['completada', 'en_proceso', 'cerrada'];
+    const estadoLabels = {'completada': 'Completadas', 'en_proceso': 'En Proceso', 'cerrada': 'Cerradas'};
+    const categoria = estadoMap[dsIdx];
+    const completados = new Set(['Ejecutada', 'Soportes Radicados', 'Facturada']);
+    const enProceso = new Set(['Recibida', 'Aceptada', 'Programada / Asignada', 'En Ejecución']);
+    let filtered;
+    if (categoria === 'completada') filtered = state.ordenes.filter(o => o.arl === arl && completados.has(o.estado));
+    else if (categoria === 'en_proceso') filtered = state.ordenes.filter(o => o.arl === arl && enProceso.has(o.estado));
+    else filtered = state.ordenes.filter(o => o.arl === arl && !completados.has(o.estado) && !enProceso.has(o.estado));
+    openDrilldown(`${arl} — ${estadoLabels[categoria]}`, filtered);
   };
 
   // Evolución mensual — click on a point

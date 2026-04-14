@@ -37,7 +37,9 @@ def init_api(service: DashboardService):
             'filtros_disponibles': {
                 'arls': service.obtener_arls(),
                 'tipos_servicio': service.obtener_tipos_servicio(),
-                'estados': ['completada', 'pendiente', 'cancelada'],
+                'estados': ['Recibida', 'Aceptada', 'Rechazada', 'Programada / Asignada',
+                            'En Ejecución', 'Ejecutada', 'Soportes Radicados',
+                            'Facturada', 'Reemplazada', 'Cancelada'],
             },
         })
 
