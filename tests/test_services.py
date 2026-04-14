@@ -28,11 +28,11 @@ class StubRepository(BaseRepository):
 
 def _sample_ordenes() -> List[Orden]:
     return [
-        Orden(1, date(2024, 1, 15), "Sura ARL", "Ecopetrol", "Laboratorio Clínico", 50, "completada", 1_000_000.0),
-        Orden(2, date(2024, 2, 10), "Positiva ARL", "Alpina", "Psicología", 20, "pendiente", 500_000.0),
-        Orden(3, date(2024, 3, 5), "Sura ARL", "Nutresa", "Seguridad Industrial", 30, "completada", 750_000.50),
-        Orden(4, date(2024, 3, 20), "Colmena Seguros", "EPM", "Laboratorio Clínico", 10, "cancelada", 200_000.0),
-        Orden(5, date(2024, 4, 1), "Positiva ARL", "Bancolombia", "Psicología", 15, "completada", 350_000.0),
+        Orden(1, date(2024, 1, 15), "Sura ARL", "Ecopetrol", "Laboratorio Clínico", 50, "Ejecutada", 1_000_000.0),
+        Orden(2, date(2024, 2, 10), "Positiva ARL", "Alpina", "Psicología", 20, "Recibida", 500_000.0),
+        Orden(3, date(2024, 3, 5), "Sura ARL", "Nutresa", "Seguridad Industrial", 30, "Facturada", 750_000.50),
+        Orden(4, date(2024, 3, 20), "Colmena Seguros", "EPM", "Laboratorio Clínico", 10, "Cancelada", 200_000.0),
+        Orden(5, date(2024, 4, 1), "Positiva ARL", "Bancolombia", "Psicología", 15, "Ejecutada", 350_000.0),
     ]
 
 
@@ -132,7 +132,7 @@ class TestAgrupaciones:
         service = _make_service()
         result = service.agrupar_ordenes_por_arl(_sample_ordenes())
 
-        # completada→completada, pendiente→en_proceso, cancelada→cerrada
+        # Sura: Ejecutada+Facturada=completada(2), Positiva: Ejecutada=completada(1)+Recibida=en_proceso(1), Colmena: Cancelada=cerrada(1)
         assert result == {
             "Colmena Seguros": {"completada": 0, "en_proceso": 0, "cerrada": 1},
             "Positiva ARL": {"completada": 1, "en_proceso": 1, "cerrada": 0},
@@ -169,11 +169,13 @@ class TestAgrupaciones:
         result = service.agrupar_ingresos_por_arl(_sample_ordenes())
 
         assert result == {
-            "Colmena Seguros": 200_000.0,
-            "Positiva ARL": 850_000.0,
             "Sura ARL": 1_750_000.50,
+            "Positiva ARL": 850_000.0,
+            "Colmena Seguros": 200_000.0,
         }
-        assert list(result.keys()) == sorted(result.keys())
+        # Verificar ordenado por valor descendente
+        values = list(result.values())
+        assert values == sorted(values, reverse=True)
         # Verificar redondeo a 2 decimales
         for v in result.values():
             assert v == round(v, 2)
