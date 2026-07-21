@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPS ARL S.A.S. - Gestión Órdenes ARL Dashboard BI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <!-- Skip link for keyboard users -->
+    <a href="#dashboard" class="skip-link">Saltar al contenido principal</a>
+
+    <!-- ========== HEADER ========== -->
+    <header style="justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <h1>IPS ARL S.A.S. - Gestión Órdenes ARL Dashboard BI</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span id="last-updated" style="font-size:0.65rem;opacity:0.7;margin-right:6px;"></span>
+            <a href="{{ url_for('dashboard.dashboard') }}" style="padding:5px 12px;font-size:0.78rem;font-weight:600;color:#fff;background:rgba(255,255,255,0.2);border-radius:5px;text-decoration:none;">Dashboard BI</a>
+            <a href="{{ url_for('resumen.resumen_ejecutivo') }}" style="padding:5px 12px;font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.8);border-radius:5px;text-decoration:none;">Resumen</a>
+            <a href="{{ url_for('gestion.gestion_panel') }}" style="padding:5px 12px;font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.8);border-radius:5px;text-decoration:none;">Gestión</a>
+            <form method="POST" action="{{ url_for('auth.logout') }}" style="margin:0;">
+                <button type="submit" style="padding:5px 12px;font-size:0.78rem;font-weight:600;color:#fff;background:rgba(239,68,68,0.8);border:none;border-radius:5px;cursor:pointer;font-family:inherit;">Salir</button>
+            </form>
+        </div>
+    </header>
+
+    <main id="dashboard">
+
+        <!-- ========== ERROR MESSAGE ========== -->
+        <div class="error-message hidden" id="error-message">
+            <span class="error-icon">⚠️</span>
+            <span id="error-text">Ha ocurrido un error al cargar los datos.</span>
+        </div>
+
+        <!-- ========== FILTER BAR ========== -->
+        <section class="filter-bar" aria-label="Filtros">
+            <div class="filter-bar-header">
+                <span class="filter-bar-title">Filtros</span>
+                <button type="button" class="filter-toggle" id="filter-toggle" title="Mostrar/Ocultar filtros">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+            </div>
+            <div class="filter-bar-content" id="filter-bar-content">
+            <div class="filter-group">
+                <label for="fecha_inicio">Fecha Inicio</label>
+                <input type="date" id="fecha_inicio" name="fecha_inicio">
+            </div>
+            <div class="filter-group">
+                <label for="fecha_fin">Fecha Fin</label>
+                <input type="date" id="fecha_fin" name="fecha_fin">
+            </div>
+            <div class="filter-group">
+                <label>ARL</label>
+                <div class="multi-select" id="ms-arl" data-filter="arl">
+                    <div class="multi-select-trigger" tabindex="0">
+                        <span class="placeholder">Seleccionar ARL...</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Buscar ARL..." aria-label="Buscar ARL">
+                        </div>
+                        <div class="dropdown-items"></div>
+                        <div class="dropdown-actions">
+                            <button type="button" class="btn-select-all">Todas</button>
+                            <button type="button" class="btn-deselect-all">Ninguna</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Tipo de Servicio</label>
+                <div class="multi-select" id="ms-servicio" data-filter="tipo_servicio">
+                    <div class="multi-select-trigger" tabindex="0">
+                        <span class="placeholder">Seleccionar servicio...</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Buscar servicio..." aria-label="Buscar servicio">
+                        </div>
+                        <div class="dropdown-items"></div>
+                        <div class="dropdown-actions">
+                            <button type="button" class="btn-select-all">Todos</button>
+                            <button type="button" class="btn-deselect-all">Ninguno</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Estado</label>
+                <div class="multi-select" id="ms-estado" data-filter="estado">
+                    <div class="multi-select-trigger" tabindex="0">
+                        <span class="placeholder">Seleccionar estado...</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Buscar estado..." aria-label="Buscar estado">
+                        </div>
+                        <div class="dropdown-items"></div>
+                        <div class="dropdown-actions">
+                            <button type="button" class="btn-select-all">Todos</button>
+                            <button type="button" class="btn-deselect-all">Ninguno</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Programa</label>
+                <div class="multi-select" id="ms-programa" data-filter="programa">
+                    <div class="multi-select-trigger" tabindex="0">
+                        <span class="placeholder">Seleccionar programa...</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Buscar programa..." aria-label="Buscar programa">
+                        </div>
+                        <div class="dropdown-items"></div>
+                        <div class="dropdown-actions">
+                            <button type="button" class="btn-select-all">Todos</button>
+                            <button type="button" class="btn-deselect-all">Ninguno</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Tarea</label>
+                <div class="multi-select" id="ms-tarea" data-filter="tarea">
+                    <div class="multi-select-trigger" tabindex="0">
+                        <span class="placeholder">Seleccionar tarea...</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Buscar tarea..." aria-label="Buscar tarea">
+                        </div>
+                        <div class="dropdown-items"></div>
+                        <div class="dropdown-actions">
+                            <button type="button" class="btn-select-all">Todas</button>
+                            <button type="button" class="btn-deselect-all">Ninguna</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn-filter" id="btn-apply-filters">Aplicar Filtros</button>
+            <button type="button" class="btn-clear" id="btn-clear-filters">Limpiar</button>
+            <button type="button" class="btn-export" id="btn-export" title="Exportar a Excel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Excel
+            </button>
+            </div>
+        </section>
+
+        <!-- ========== KPI CARDS ========== -->
+        <section class="kpi-grid" aria-label="Indicadores clave">
+            <article class="kpi-card kpi-clickable" id="kpi-card-ordenes" title="Ver detalle de órdenes">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Total Órdenes</span>
+                    <span class="kpi-value" id="kpi-total-ordenes">0</span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-clickable" id="kpi-card-ingresos" title="Ver desglose de ingresos">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Ingresos Totales</span>
+                    <span class="kpi-value" id="kpi-ingresos">$0</span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-clickable" id="kpi-card-cumplimiento" title="Ver análisis de cumplimiento">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Cumplimiento</span>
+                    <span class="kpi-value"><span id="kpi-cumplimiento">0</span><span class="kpi-suffix">%</span></span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-warning kpi-clickable" id="kpi-card-pendientes" title="Ver detalle de pendientes">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">En Gestión</span>
+                    <span class="kpi-value" id="kpi-pendientes">0</span>
+                    <span class="kpi-sublabel" id="kpi-valor-pendiente-sub"></span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-danger kpi-clickable" id="kpi-card-cartera" title="Ver análisis de cartera">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Cartera Sin Facturar</span>
+                    <span class="kpi-value" id="kpi-cartera">$0</span>
+                </div>
+            </article>
+            <article class="kpi-card kpi-info kpi-clickable" id="kpi-card-dias-fact" title="Ver análisis de tiempos">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 15 14"/></svg></div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Días Prom. Facturación</span>
+                    <span class="kpi-value"><span id="kpi-dias-facturacion">0</span><span class="kpi-suffix"> días</span></span>
+                </div>
+            </article>
+        </section>
+
+        <!-- ========== CHARTS ========== -->
+        <section class="charts-grid" aria-label="Gráficos">
+            <div class="chart-card">
+                <h3>Órdenes por ARL</h3>
+                <canvas id="chart-ordenes-arl"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Evolución Mensual de Órdenes <button type="button" class="btn-proyeccion" id="btn-proyeccion" title="Proyección +6 meses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> +6</button></h3>
+                <div class="chart-year-pills" id="year-pills"></div>
+                <canvas id="chart-ordenes-mes"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Distribución por Tipo de Servicio</h3>
+                <canvas id="chart-servicios"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Ingresos Facturados por ARL</h3>
+                <canvas id="chart-ingresos-arl"></canvas>
+            </div>
+        </section>
+
+        <!-- ========== PENDING ORDERS MODAL ========== -->
+        <div class="modal-overlay hidden" role="dialog" aria-modal="true" id="modal-pendientes">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>⚠️ Órdenes Pendientes por ARL — Análisis de Gestión</h3>
+                    <div class="modal-header-right">
+                        <span class="table-info" id="pendientes-info"></span>
+                        <button type="button" class="modal-close" id="modal-close-pendientes" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div id="pendientes-container"></div>
+            </div>
+        </div>
+
+        <!-- ========== ORDERS DETAIL MODAL ========== -->
+        <div class="modal-overlay hidden" role="dialog" aria-modal="true" id="modal-ordenes">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📋 Detalle de Órdenes de Servicio</h3>
+                    <div class="modal-header-right">
+                        <span class="table-info" id="table-info"></span>
+                        <button type="button" class="modal-close" id="modal-close-ordenes" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-column="id">ID <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="fecha">Fecha <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="arl">ARL <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="empresa">Empresa <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="tipo_servicio">Tipo de Servicio <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="cantidad_trabajadores">Trabajadores <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="estado">Estado <span class="sort-icon">▲▼</span></th>
+                                    <th data-column="valor_facturado">Valor Facturado <span class="sort-icon">▲▼</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="pagination">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== DRILL-DOWN MODAL ========== -->
+        <div class="modal-overlay hidden" role="dialog" aria-modal="true" id="modal-drilldown">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="drilldown-title">Detalle</h3>
+                    <div class="modal-header-right">
+                        <span class="table-info" id="drilldown-info"></span>
+                        <button type="button" class="modal-close" id="modal-close-drilldown" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" id="drilldown-body">
+                    <div class="modal-summary-cards" id="drilldown-summary"></div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Fecha</th><th>ARL</th><th>Empresa</th>
+                                    <th>Tipo de Servicio</th><th>Trabajadores</th><th>Estado</th><th>Valor Facturado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="drilldown-table-body"></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="drilldown-pagination"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== INGRESOS MODAL ========== -->
+        <div class="modal-overlay hidden" role="dialog" aria-modal="true" id="modal-ingresos">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Desglose de Ingresos Facturados</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-ingresos" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" id="ingresos-container"></div>
+            </div>
+        </div>
+
+        <!-- ========== ARLS MODAL ========== -->
+        <div class="modal-overlay hidden" role="dialog" aria-modal="true" id="modal-arls">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Detalle por ARL</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-arls" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" id="arls-container"></div>
+            </div>
+        </div>
+
+        <!-- ========== CUMPLIMIENTO MODAL ========== -->
+        <div class="modal-overlay hidden" role="dialog" aria-modal="true" id="modal-cumplimiento">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Análisis de Cumplimiento — Embudo de Gestión</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-cumplimiento" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" style="overflow-y:auto;">
+                    <div id="cumplimiento-container"></div>
+                    <div style="padding:16px 20px;border-top:1px solid #e5e7eb;">
+                        <h4 style="font-size:0.82rem;font-weight:700;color:#1e2a3a;margin-bottom:10px;">Embudo del Flujo de Órdenes</h4>
+                        <div style="height:200px;position:relative;">
+                            <canvas id="chart-funnel"></canvas>
+                        </div>
+                        <div id="funnel-analysis" style="margin-top:12px;padding:12px 14px;background:#f8fafc;border-radius:8px;border:1px solid #e5e7eb;font-size:0.78rem;color:#374151;line-height:1.6;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== CARTERA MODAL ========== -->
+        <div class="modal-overlay hidden" role="dialog" aria-modal="true" id="modal-cartera">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🧾 Cartera Sin Facturar — Ejecutadas Pendientes de Factura</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-cartera" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" id="cartera-container"></div>
+            </div>
+        </div>
+
+        <!-- ========== TIEMPOS PROCESO MODAL ========== -->
+        <div class="modal-overlay hidden" role="dialog" aria-modal="true" id="modal-tiempos">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>⏱ Tiempos del Ciclo de Gestión — Registro → Ejecución → Facturación</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-tiempos" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" id="tiempos-container"></div>
+            </div>
+        </div>
+
+        <!-- ========== PROJECTION MODAL ========== -->
+        <div class="modal-overlay hidden" role="dialog" aria-modal="true" id="modal-proyeccion">
+            <div class="modal-content" style="max-width:1100px">
+                <div class="modal-header">
+                    <h3>Proyección de Ingresos por ARL — Regresión Lineal</h3>
+                    <div class="modal-header-right">
+                        <button type="button" class="modal-close" id="modal-close-proyeccion" aria-label="Cerrar">×</button>
+                    </div>
+                </div>
+                <div class="modal-body-scroll" style="padding:20px;">
+                    <div class="chart-year-pills" id="proyeccion-pills">
+                        <button class="year-pill active" data-meses="12">Últ. 12m + Proy</button>
+                        <button class="year-pill" data-meses="6">Últ. 6m + Proy</button>
+                        <button class="year-pill" data-meses="24">Últ. 24m + Proy</button>
+                    </div>
+                    <div style="height:320px;position:relative;">
+                        <canvas id="chart-proyeccion"></canvas>
+                    </div>
+                    <div style="margin-top:12px;padding:10px 14px;background:#f8fafc;border-radius:6px;border:1px solid #e5e7eb;font-size:0.75rem;color:#5a6b7d;line-height:1.5;">
+                        <strong>Lectura:</strong> Líneas sólidas = ingresos históricos reales. Líneas punteadas = proyección basada en regresión lineal. La proyección usa la tendencia de los meses históricos seleccionados para estimar los próximos 6 meses.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ========== LOADING OVERLAY ========== -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="app-footer" style="background:linear-gradient(135deg,#1F67AE 0%,#2a75be 100%);color:#fff;border-top:none;padding:18px 24px;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;">
+            <span style="font-size:0.72rem;opacity:0.9;">© 2026 IPS ARL S.A.S. | Dashboard BI v1.0 | Especialización en Analítica de Datos</span>
+            <img src="{{ url_for('static', filename='logo_tecno_comfenalco2.png') }}" alt="Logo FUTCO" style="height:32px;border-radius:4px;">
+        </div>
+    </footer>
+
+    <!-- ========== SCRIPTS ========== -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+</body>
+</html>

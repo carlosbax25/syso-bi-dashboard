@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sustentación — IPS ARL S.A.S.</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --navy: #0D1B3E;
+    --blue: #1B3A6B;
+    --red: #C0392B;
+    --gold: #D4880F;
+    --teal: #1A8A7D;
+    --light: #F5F6F8;
+    --gray: #5D6D7E;
+    --dark: #1C2833;
+}
+.reveal { font-family: 'Montserrat', sans-serif; color: var(--dark); }
+.reveal .slide-background-content { background: transparent !important; }
+.reveal .slides section.content { background: url('/static/Plantilla.png') no-repeat center center / 100% 100% !important; }
+.reveal section { text-align: left; padding: 50px 60px 80px 60px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+.reveal h2 { font-family: 'Anton', sans-serif; font-size: 1.5em; color: var(--navy); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 2px; }
+.reveal h3 { font-size: 0.7em; font-weight: 600; color: var(--gray); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+.reveal ul, .reveal ol { font-size: 0.62em; line-height: 1.8; padding-left: 18px; }
+.reveal li { margin-bottom: 2px; }
+.reveal p { font-size: 0.62em; line-height: 1.6; }
+
+.dark { background: linear-gradient(160deg, var(--navy), var(--blue)) !important; color: #fff !important; text-align: center !important; justify-content: center !important; align-items: center !important; }
+.dark h1, .dark h2, .dark p { color: #fff !important; }
+.dark .sep { width: 50px; height: 3px; background: var(--red); margin: 14px auto; }
+
+.content { position: relative; overflow: visible; }
+.content::before { display: none; }
+.content::after { display: none; }
+
+/* Evitar que los .box tengan fondo que tape la plantilla */
+.box { background: rgba(255,255,255,0.92); border-radius: 6px; padding: 14px 16px; font-size: 0.66em; line-height: 1.85; }
+.box b { display: block; margin-bottom: 6px; font-size: 1.05em; color: var(--navy); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px; }
+
+.num-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+.num-card { background: var(--light); border-radius: 6px; padding: 14px 10px; text-align: center; border-left: 3px solid var(--navy); }
+.num-card .v { font-family: 'Anton', sans-serif; font-size: 1.35em; color: var(--navy); }
+.num-card .l { font-size: 0.5em; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+.num-card.r { border-left-color: var(--red); }
+.num-card.r .v { color: var(--red); }
+.num-card.g { border-left-color: var(--gold); }
+.num-card.g .v { color: var(--gold); }
+.num-card.t { border-left-color: var(--teal); }
+.num-card.t .v { color: var(--teal); }
+
+.note { background: rgba(192,57,43,0.05); border-left: 3px solid var(--red); padding: 10px 14px; border-radius: 0 5px 5px 0; margin: 12px 0; font-size: 0.67em; line-height: 1.6; }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: 0.56em; margin-top: 12px; }
+.tbl th { background: var(--navy); color: #fff; padding: 10px 12px; text-align: left; font-weight: 600; }
+.tbl td { padding: 9px 12px; border-bottom: 1px solid #E5E8EC; }
+.tbl tr:nth-child(even) td { background: var(--light); }
+.tbl .ok { color: var(--teal); font-weight: 700; }
+
+.steps { display: flex; gap: 8px; margin-top: 14px; margin-bottom: 6px; flex-wrap: wrap; align-items: center; }
+.steps span { background: var(--navy); color: #fff; padding: 7px 16px; border-radius: 18px; font-size: 0.52em; font-weight: 600; }
+.steps .arr { background: none; color: var(--red); font-weight: 700; font-size: 0.7em; padding: 0 3px; }
+
+.btn-demo { display: inline-block; margin-top: 22px; padding: 13px 38px; background: var(--red); color: #fff; border-radius: 5px; text-decoration: none; font-family: 'Anton', sans-serif; font-size: 1em; letter-spacing: 0.03em; }
+
+.reveal .progress { height: 3px; color: var(--red); }
+.reveal .controls { bottom: 12px !important; right: 50% !important; transform: translateX(50%) !important; }
+
+/* Logo fijo en cada slide */
+/* Logo y URL: incluidos en Plantilla.png como fondo */
+
+/* URL universidad en slides de contenido */
+.univ-footer { position: fixed; bottom: 18px; right: 90px; z-index: 200; font-size: 10px; color: #2563EB; font-weight: 500; pointer-events: none; letter-spacing: 0.01em; }
+
+/* Modal de objetivos */
+.obj-overlay { display:none; position:fixed; inset:0; z-index:500; background:rgba(13,27,62,0.6); backdrop-filter:blur(3px); align-items:center; justify-content:center; }
+.obj-overlay.active { display:flex; }
+.obj-modal { background:#fff; border-radius:8px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
+.obj-modal-head { background:var(--navy); color:#fff; padding:16px 24px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:space-between; }
+.obj-modal-head h4 { font-family:var(--font-display, 'Anton'); font-size:1em; margin:0; text-transform:uppercase; letter-spacing:0.02em; }
+.obj-modal-close { background:none; border:none; color:#fff; font-size:1.4em; cursor:pointer; opacity:0.7; transition:opacity 0.2s; }
+.obj-modal-close:hover { opacity:1; }
+.obj-modal-body { padding:20px 24px; font-size:0.85em; line-height:1.75; color:var(--dark); }
+.obj-modal-body b { color:var(--navy); }
+
+/* Objective cards */
+.obj-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+.obj-card { background:var(--light); border-radius:6px; padding:12px 14px; font-size:0.62em; cursor:pointer; border-left:3px solid var(--navy); transition: transform 0.15s, box-shadow 0.15s; }
+.obj-card:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(13,27,62,0.1); }
+.obj-card .obj-num { font-family:'Anton',sans-serif; font-size:1.4em; color:var(--navy); float:left; margin-right:10px; line-height:1; }
+.obj-card .obj-text { color:var(--dark); line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section class="dark">
+    <img src="{{ url_for('static', filename='logo_tecno_comfenalco2.png') }}" alt="" style="height:50px;margin-bottom:18px;filter:brightness(1.2);">
+    <h1 style="font-family:'Anton';font-size:1.4em;line-height:1.25;">Diseño de una Solución de Inteligencia de Negocios<br>para la Gestión de Órdenes de Servicio ARL</h1>
+    <div class="sep"></div>
+    <p style="font-size:0.72em;">IPS ARL S.A.S.</p>
+    <p style="font-size:0.52em;margin-top:22px;opacity:0.7;">Luis Arrieta · Carlos Acosta · Pedro Guzmán<br>Especialización en Analítica de Datos e Información · Tecnológico Comfenalco · 2026</p>
+    <p style="font-size:0.44em;margin-top:16px;opacity:0.5;font-style:italic;">Proyecto académico · Datos sintéticos · Organización representativa con fines ilustrativos</p>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Apertura</h2>
+    <h3>¿Por qué importa este proyecto?</h3>
+    <div class="note"><b>La facturación es la fuente principal de ingresos de la IPS.</b> Los retrasos en este proceso comprometen directamente la sostenibilidad financiera de la organización.</div>
+    <div class="num-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="num-card"><div class="v">45.000</div><div class="l">Órdenes ARL</div></div>
+        <div class="num-card r"><div class="v">$926M</div><div class="l">Cartera pendiente</div></div>
+        <div class="num-card g"><div class="v">22.7</div><div class="l">Días prom. facturar</div></div>
+        <div class="num-card"><div class="v">0</div><div class="l">Visibilidad en tiempo real</div></div>
+    </div>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Contexto</h2>
+    <h3>¿Dónde ocurre el problema?</h3>
+    <div class="grid2">
+        <div class="box"><b>Organización</b>IPS ARL S.A.S.<br>Cartagena, Colombia<br>Sector: Seguridad y Salud en el Trabajo<br>14 empresas clientes activas</div>
+        <div class="box"><b>Operación</b>4 ARLs: Sura · Colmena · Bolívar · Alfa<br>76 servicios en catálogo<br>45.000 órdenes (2020–2026)<br>Fuente: Matriz de Gestión ARL 2026</div>
+    </div>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Problema</h2>
+    <h3>Gestión ineficiente de órdenes de servicio ARL</h3>
+    <div class="grid2">
+        <div class="box"><b>Causas</b>Registros manuales en Excel<br>Sin integración entre sistemas<br>Ausencia de modelo de datos<br>Baja estandarización de los registros</div>
+        <div class="box" style="border-left:3px solid var(--red);"><b style="color:var(--red);">Consecuencias</b>22.7 días promedio para facturar<br>18.912 órdenes sin factura ($926M)<br>Reprocesos y sobrecarga laboral<br>Decisiones sin respaldo analítico</div>
+    </div>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Objetivo</h2>
+    <h3>¿Qué se propuso lograr?</h3>
+    <div class="note">Diseñar una solución de analítica de datos que integre, transforme y visualice la información de las órdenes ARL mediante un tablero de inteligencia de negocios en Python/Flask.</div>
+    <div class="obj-grid">
+        <div class="obj-card" onclick="openObj(1)"><span class="obj-num">1</span><span class="obj-text">Identificar fuentes de datos y variables clave</span></div>
+        <div class="obj-card" onclick="openObj(2)"><span class="obj-num">2</span><span class="obj-text">Diseñar un modelo unificado de datos</span></div>
+        <div class="obj-card" onclick="openObj(3)"><span class="obj-num">3</span><span class="obj-text">Diseñar el flujo ETL</span></div>
+        <div class="obj-card" onclick="openObj(4)"><span class="obj-num">4</span><span class="obj-text">Definir indicadores clave de desempeño</span></div>
+        <div class="obj-card" onclick="openObj(5)" style="grid-column:span 2;text-align:center;"><span class="obj-num">5</span><span class="obj-text">Proponer el diseño funcional del tablero interactivo</span></div>
+    </div>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Metodología</h2>
+    <h3>¿Cómo se desarrolló?</h3>
+    <div class="steps" style="margin-bottom:16px;">
+        <span>Negocio</span><span class="arr">→</span>
+        <span>Datos</span><span class="arr">→</span>
+        <span>ETL</span><span class="arr">→</span>
+        <span>Modelado</span><span class="arr">→</span>
+        <span>Evaluación</span><span class="arr">→</span>
+        <span style="background:var(--red);">Despliegue</span>
+    </div>
+    <table class="tbl" style="margin-top:8px;">
+        <tr><th>Fase</th><th>Actividad</th><th>Entregable</th></tr>
+        <tr><td>Negocio</td><td>Entrevistas administrativas</td><td>Diagnóstico del problema</td></tr>
+        <tr><td>Datos</td><td>Revisión Matriz ARL</td><td>13 variables documentadas</td></tr>
+        <tr><td>Preparación</td><td>Carga desde Excel a la aplicación</td><td>Proceso de carga automatizado</td></tr>
+        <tr><td>Modelado</td><td>Indicadores + Proyección de ingresos</td><td>6 indicadores + proyección de ingresos</td></tr>
+        <tr><td>Evaluación</td><td>Validación con personal de la IPS</td><td>Indicadores ajustados y aprobados</td></tr>
+        <tr><td>Despliegue</td><td>Publicación en internet</td><td>Tablero publicado en internet</td></tr>
+    </table>
+</section>
+
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Solución</h2>
+    <h3>¿Qué se construyó?</h3>
+    <div class="grid2">
+        <div class="box"><b>Tablero de indicadores</b>• 6 indicadores interactivos con detalle al hacer clic<br>• 4 gráficos dinámicos con filtros<br>• Filtros combinados: ARL, servicio, programa, tarea<br>• Exportación a Excel<br>• Tendencias mensuales</div>
+        <div class="box" style="border-top:3px solid var(--teal);"><b>Componentes de análisis</b>• Proyección de ingresos a 6 meses<br>• Resumen ejecutivo narrativo<br>• Análisis de cartera y tiempos de facturación<br>• Carga de datos desde archivo Excel<br>• Diseño accesible para daltonismo</div>
+    </div>
+    <p style="margin-top:10px;color:var(--gray);font-size:0.6em;">Desarrollado en Python · Publicado en internet · Accesible desde cualquier navegador</p>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Resultados</h2>
+    <h3>¿Qué se obtuvo? — Indicadores sobre 45.000 órdenes (2020–2026)</h3>
+    <div class="num-grid">
+        <div class="num-card"><div class="v" id="pk-total">45.000</div><div class="l">Total Órdenes</div></div>
+        <div class="num-card t"><div class="v" id="pk-ingresos">$2.204M</div><div class="l">Ingresos</div></div>
+        <div class="num-card"><div class="v" id="pk-cumpl">62.2%</div><div class="l">Cumplimiento</div></div>
+        <div class="num-card g"><div class="v" id="pk-gestion">11.633</div><div class="l">En Gestión</div></div>
+        <div class="num-card r"><div class="v" id="pk-cartera">$926M</div><div class="l">Cartera</div></div>
+        <div class="num-card"><div class="v" id="pk-dias">22.7 días</div><div class="l">Días Facturación</div></div>
+    </div>
+    <div class="note" style="margin-top:10px;">El 42% de las órdenes completadas no han sido facturadas. Punto crítico del proceso identificado: el retraso está en facturar, no en prestar el servicio.</div>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Validación</h2>
+    <h3>¿Cómo se comprobó?</h3>
+    <table class="tbl">
+        <tr><th>Nivel</th><th>Método</th><th>Resultado</th><th></th></tr>
+        <tr><td>Técnica</td><td>23 pruebas unitarias automatizadas</td><td class="ok">Aprobadas</td><td style="cursor:pointer;color:var(--navy);" onclick="openVal(1)">Ver ▸</td></tr>
+        <tr><td>Modelo predictivo</td><td>Validación con datos reservados</td><td class="ok">Métricas aceptables</td><td style="cursor:pointer;color:var(--navy);" onclick="openVal(2)">Ver ▸</td></tr>
+        <tr><td>Funcional</td><td>Sesión con Analista de Gestión ARL</td><td class="ok">Indicadores coherentes</td><td style="cursor:pointer;color:var(--navy);" onclick="openVal(3)">Ver ▸</td></tr>
+        <tr><td>Funcional</td><td>Sesión con Director Administrativo</td><td class="ok">Confirmada utilidad</td><td style="cursor:pointer;color:var(--navy);" onclick="openVal(4)">Ver ▸</td></tr>
+        <tr><td>Normativo</td><td>Contraste con plazos contractuales</td><td class="ok">Umbral 30 días validado</td><td style="cursor:pointer;color:var(--navy);" onclick="openVal(5)">Ver ▸</td></tr>
+    </table>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Valor Generado</h2>
+    <h3>¿Qué aporta la solución?</h3>
+    <table class="tbl">
+        <tr><th>Indicador</th><th>Antes</th><th>Ahora</th><th>Cambio</th></tr>
+        <tr><td>Reportes</td><td>3–4 horas</td><td>Inmediato</td><td class="ok">De horas a segundos</td></tr>
+        <tr><td>Detección cartera</td><td>Manual semanal</td><td>Automática</td><td class="ok">Ahora es permanente</td></tr>
+        <tr><td>Visibilidad</td><td>Cierre de mes</td><td>Tiempo real</td><td class="ok">Visible en todo momento</td></tr>
+        <tr><td>Proyección</td><td>No existía</td><td>6 meses/ARL</td><td class="ok">No existía antes</td></tr>
+    </table>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Conclusiones</h2>
+    <h3>¿Qué se aprendió?</h3>
+    <ol>
+        <li>Solución BI funcional con 6 KPIs y proyección predictiva, desplegada en producción.</li>
+        <li>Punto crítico del proceso identificado: <strong>el retraso está en facturar, no en prestar el servicio.</strong></li>
+        <li>Reportes reducidos de 3–4 horas a consulta inmediata en tiempo real.</li>
+        <li>Viable con herramientas open-source y costo cero de infraestructura.</li>
+    </ol>
+</section>
+
+<section class="content" data-background-image="/static/Plantilla.png" data-background-size="100% 100%">
+    <h2>Recomendaciones</h2>
+    <h3>¿Qué sigue?</h3>
+    <div class="grid3">
+        <div class="box" style="border-top:3px solid var(--navy);"><b>Corto plazo</b>• Base de datos permanente<br>• Conexión con portales ARL<br>• Alertas por email</div>
+        <div class="box" style="border-top:3px solid var(--gold);"><b>Mediano plazo</b>• Proyecciones por mes alto y bajo<br>• Alertas de órdenes en riesgo<br>• Sugerencias de acción automáticas</div>
+        <div class="box" style="border-top:3px solid var(--teal);"><b>Largo plazo</b>• Replicar en otras IPS<br>• Trazabilidad completa del proceso<br>• Facturación electrónica</div>
+    </div>
+</section>
+
+<section class="dark">
+    <h2 style="font-family:'Anton';font-size:2.2em;">Demostración</h2>
+    <div class="sep"></div>
+    <p style="font-size:0.75em;">Tablero en funcionamiento con datos del proceso</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px auto;max-width:600px;font-size:0.5em;">
+        <div style="background:rgba(255,255,255,0.08);border-radius:6px;padding:10px;text-align:center;">
+            <div style="font-family:'Anton';font-size:1.8em;">6</div>
+            <div style="opacity:0.7;">Indicadores</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:6px;padding:10px;text-align:center;">
+            <div style="font-family:'Anton';font-size:1.8em;">4</div>
+            <div style="opacity:0.7;">Gráficos</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:6px;padding:10px;text-align:center;">
+            <div style="font-family:'Anton';font-size:1.8em;">45K</div>
+            <div style="opacity:0.7;">Órdenes</div>
+        </div>
+    </div>
+    <a class="btn-demo" href="/login" target="_blank">Abrir tablero</a>
+    <p style="font-size:0.48em;margin-top:14px;opacity:0.5;">ips-arl-dashboard.onrender.com</p>
+</section>
+
+<section class="dark">
+    <h1 style="font-family:'Anton';font-size:2.6em;">Gracias</h1>
+    <div class="sep"></div>
+    <p style="font-size:0.8em;margin-top:12px;">Espacio para preguntas</p>
+    <p style="font-size:0.5em;margin-top:28px;opacity:0.6;">Arrieta · Acosta · Guzmán<br>Tecnológico Comfenalco · 2026</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+Reveal.initialize({ hash:true, slideNumber:'c/t', transition:'slide', transitionSpeed:'fast', center:true, margin:0.04, width:1280, height:720, progress:true });
+
+// Objective modals
+const OBJ_DATA = {
+    1: {
+        title: 'Objetivo 1: Fuentes de datos y variables',
+        body: '<b>Descripción:</b> Identificar las fuentes de datos disponibles en la IPS y las variables clave relacionadas con la gestión de las órdenes de servicio ARL.<br><br><b>Resultado alcanzado:</b><br>Se identificaron 4 fuentes primarias (Matriz ARL, portales de las ARL, reportes de facturación y reportes de cartera) y se documentaron 13 variables del modelo de datos: ID, fecha de registro, ARL, empresa, tipo de servicio, programa, tarea, cantidad de trabajadores, estado, valor facturado, responsable, fecha de ejecución y fecha de facturación.<br><br><b>Evidencia:</b> Tabla de variables documentada en el Capítulo 3, sección 3.4.'
+    },
+    2: {
+        title: 'Objetivo 2: Modelo unificado de datos',
+        body: '<b>Descripción:</b> Diseñar un modelo que permita la integración, simplificación y estructuración de la información dispersa en múltiples hojas de cálculo.<br><br><b>Resultado alcanzado:</b><br>Se diseñó una estructura de datos organizada con 13 campos (identificador, fechas, ARL, empresa, servicio, estado, valor, entre otros), 3 indicadores de tiempo calculados automáticamente y un flujo de 10 estados que representa cada etapa del proceso. La arquitectura permite que en el futuro se pueda conectar a una base de datos (como MySQL) sin necesidad de modificar el tablero ni los indicadores.<br><br><b>Evidencia:</b> Modelo de datos documentado en el repositorio del proyecto.'
+    },
+    3: {
+        title: 'Objetivo 3: Flujo ETL',
+        body: '<b>Descripción:</b> Diseñar el proceso que toma los datos en bruto del archivo Excel, los limpia, valida y los deja listos para el análisis.<br><br><b>Resultado alcanzado:</b><br>Se implementó un proceso automatizado que:<br>• Recibe un archivo Excel desde el navegador<br>• Valida que cada campo tenga el formato correcto<br>• Convierte fechas al formato estándar<br>• Asigna valores por defecto cuando hay campos vacíos<br>• Informa de las filas con errores sin detener la carga<br>• Deja los datos disponibles inmediatamente en el tablero<br><br>El proceso soporta las 13 columnas del modelo, incluyendo fechas opcionales de ejecución y facturación.<br><br><b>Evidencia:</b> Funcionalidad de carga en el Panel de Gestión del tablero.'
+    },
+    4: {
+        title: 'Objetivo 4: Indicadores clave (KPIs)',
+        body: '<b>Descripción:</b> Definir los indicadores que permitan medir y monitorear el desempeño del proceso de gestión de órdenes.<br><br><b>Resultado alcanzado:</b><br>Se definieron 6 indicadores, cada uno con su fórmula y umbral de alerta:<br>• <b>Total de órdenes:</b> cantidad de órdenes en el período<br>• <b>Ingresos totales:</b> suma del valor facturado<br>• <b>Tasa de cumplimiento:</b> porcentaje de órdenes que avanzaron a completadas<br>• <b>Órdenes en gestión:</b> órdenes en proceso activo sin completar<br>• <b>Cartera sin facturar:</b> valor de órdenes ejecutadas sin factura emitida<br>• <b>Días promedio de facturación:</b> tiempo entre ejecutar el servicio y emitir la factura (alerta si supera 30 días)<br><br>Cada indicador fue validado con el personal administrativo.<br><br><b>Evidencia:</b> Los 6 indicadores visibles en la pantalla principal del tablero.'
+    },
+    5: {
+        title: 'Objetivo 5: Tablero interactivo',
+        body: '<b>Descripción:</b> Diseñar y construir el tablero web que permita visualizar los indicadores y los datos en tiempo real.<br><br><b>Resultado alcanzado:</b><br>Se desarrolló un tablero web con:<br>• 6 tarjetas de indicadores que al hacer clic muestran el detalle<br>• 4 gráficos interactivos: distribución por ARL, evolución mensual, tipos de servicio e ingresos<br>• Filtros combinados por ARL, servicio, programa, tarea, estado y fechas<br>• Proyección de ingresos a 6 meses basada en tendencia histórica<br>• Resumen ejecutivo con análisis narrativo automático<br>• Panel para cargar datos desde archivos Excel<br>• Exportación de datos filtrados a Excel<br>• Diseño accesible con colores diferenciables para personas con daltonismo<br><br>El tablero está publicado en internet y es accesible desde cualquier navegador.<br><br><b>URL:</b> https://ips-arl-dashboard.onrender.com<br><br><b>Evidencia:</b> Tablero funcional desplegado y operativo.'
+    },
+};
+
+function openObj(n) {
+    const d = OBJ_DATA[n];
+    document.getElementById('obj-modal-title').textContent = d.title;
+    document.getElementById('obj-modal-body').innerHTML = d.body;
+    document.getElementById('obj-overlay').classList.add('active');
+}
+function closeObj() {
+    document.getElementById('obj-overlay').classList.remove('active');
+}
+
+// Validation modals
+const VAL_DATA = {
+    1: {
+        title: 'Validación Técnica — Pruebas automatizadas',
+        body: '<b>¿Qué se hizo?</b><br>Se crearon 23 pruebas automatizadas que verifican el correcto funcionamiento de los indicadores, los filtros y los cálculos del tablero.<br><br><b>¿Cómo funciona?</b><br>Cada vez que se modifica el código, las pruebas se ejecutan automáticamente y verifican que:<br>• Los 6 indicadores calculen correctamente con datos conocidos<br>• Los filtros por fecha, ARL, estado y servicio funcionen bien<br>• Las agrupaciones por mes, ARL y servicio sean correctas<br>• La proyección de ingresos funcione con tendencias positivas, negativas y planas<br>• El sistema se comporte correctamente con datos vacíos o extremos<br><br><b>Resultado:</b> Las 23 pruebas pasan exitosamente.'
+    },
+    2: {
+        title: 'Validación del Modelo Predictivo',
+        body: '<b>¿Qué se hizo?</b><br>Se reservaron los últimos 3 meses de datos históricos como "datos de prueba" que el modelo no conoce. Se entrenó la proyección con los meses anteriores y se compararon las proyecciones contra los valores reales.<br><br><b>¿Cómo se midió?</b><br>Se calcularon tres métricas:<br>• <b>Error promedio (RMSE):</b> indica en pesos cuánto se desvía la proyección del valor real<br>• <b>Error absoluto (MAE):</b> promedio de las diferencias sin importar si es por encima o por debajo<br>• <b>Proporción explicada (R²):</b> qué porcentaje del comportamiento real captura el modelo (más cercano a 1 = mejor)<br><br><b>Resultado:</b> Las métricas son aceptables para cada una de las 4 ARLs, confirmando que la tendencia lineal es una aproximación útil para la proyección de ingresos a corto plazo.'
+    },
+    3: {
+        title: 'Validación Funcional — Analista de Gestión ARL',
+        body: '<b>¿Qué se hizo?</b><br>Se realizó una sesión presencial con el Analista de Gestión ARL para comparar los indicadores del tablero contra los datos que él maneja manualmente en Excel.<br><br><b>¿Qué se verificó?</b><br>• Que el total de órdenes coincidiera con los registros de la Matriz ARL<br>• Que la distribución por ARL reflejara la proporción real de órdenes<br>• Que los estados de las órdenes fueran coherentes con el proceso operativo<br>• Que los valores facturados correspondieran al tarifario vigente<br><br><b>Resultado:</b> Los indicadores del tablero coinciden con los datos manuales del analista con una diferencia menor al 2%, atribuible a registros en proceso de actualización.'
+    },
+    4: {
+        title: 'Validación Funcional — Director Administrativo',
+        body: '<b>¿Qué se hizo?</b><br>Se presentó el tablero al Director Administrativo para evaluar si la información mostrada es útil para la toma de decisiones gerenciales.<br><br><b>¿Qué se evaluó?</b><br>• Claridad de los indicadores presentados<br>• Utilidad de la proyección de ingresos para la planificación trimestral<br>• Pertinencia del indicador de cartera sin facturar<br>• Facilidad de uso de los filtros y los gráficos<br><br><b>Resultado:</b> El Director confirmó que el tablero es "útil para la planificación" y que la visibilidad de la cartera pendiente permite priorizar acciones de cobro de forma inmediata.'
+    },
+    5: {
+        title: 'Validación Normativa — Plazos contractuales',
+        body: '<b>¿Qué se hizo?</b><br>Se contrastó el umbral de alerta de 30 días (para el indicador de tiempo de facturación) contra los plazos establecidos en los contratos vigentes con las ARL.<br><br><b>¿Qué se verificó?</b><br>• Los contratos con Sura, Colmena, Bolívar y Alfa establecen plazos máximos para la radicación de facturas<br>• Superar esos plazos expone a la IPS a glosas (rechazos de facturación) o pérdida del derecho a cobro<br>• El umbral de 30 días se sitúa por debajo del límite contractual más estricto<br><br><b>Resultado:</b> Se confirmó que 30 días es un umbral de alerta adecuado y preventivo, coherente con las condiciones contractuales reales.'
+    },
+};
+
+function openVal(n) {
+    const d = VAL_DATA[n];
+    document.getElementById('obj-modal-title').textContent = d.title;
+    document.getElementById('obj-modal-body').innerHTML = d.body;
+    document.getElementById('obj-overlay').classList.add('active');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeObj(); });
+
+fetch('/api/datos').then(r=>r.json()).then(d=>{
+    const k=d.kpis||{},o=d.ordenes||[];
+    const f=n=>'$'+Number(n).toLocaleString('es-CO',{maximumFractionDigits:0});
+    const n=v=>Number(v).toLocaleString('es-CO');
+    const G=new Set(['Recibida','Aceptada','Programada / Asignada','En Ejecución']);
+    document.getElementById('pk-total').textContent=n(k.total_ordenes||0);
+    document.getElementById('pk-ingresos').textContent=f(k.ingresos_totales||0);
+    document.getElementById('pk-cumpl').textContent=(k.tasa_cumplimiento||0).toFixed(1)+'%';
+    document.getElementById('pk-gestion').textContent=n(o.filter(x=>G.has(x.estado)).length);
+    document.getElementById('pk-cartera').textContent=f(k.valor_cartera_pendiente||0);
+    const dp=k.dias_promedio_facturacion||0;
+    document.getElementById('pk-dias').textContent=dp>0?dp.toFixed(1)+' días':'—';
+}).catch(()=>{});
+</script>
+
+<!-- Modal overlay for objectives -->
+<div class="obj-overlay" id="obj-overlay" onclick="if(event.target===this)closeObj();">
+    <div class="obj-modal">
+        <div class="obj-modal-head">
+            <h4 id="obj-modal-title"></h4>
+            <button class="obj-modal-close" onclick="closeObj()">×</button>
+        </div>
+        <div class="obj-modal-body" id="obj-modal-body"></div>
+    </div>
+</div>
+</body>
+</html>
