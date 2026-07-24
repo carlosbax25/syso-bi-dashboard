@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify, current_app
+from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify, current_app, send_from_directory
 
 gestion_bp = Blueprint('gestion', __name__)
 
@@ -8,6 +8,17 @@ def gestion_panel():
     if not session.get('user'):
         return redirect(url_for('auth.login'))
     return render_template('gestion.html')
+
+
+@gestion_bp.route('/gestion/descargar-formato')
+def descargar_formato():
+    """Fuerza la descarga del formato Excel."""
+    return send_from_directory(
+        'static',
+        'Formato_Carga_Ordenes.xlsx',
+        as_attachment=True,
+        download_name='Formato_Carga_Ordenes.xlsx'
+    )
 
 
 @gestion_bp.route('/gestion/upload', methods=['POST'])
