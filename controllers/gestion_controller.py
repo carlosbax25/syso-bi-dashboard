@@ -113,10 +113,10 @@ def upload_excel():
         if not ordenes:
             return jsonify({'error': 'No se encontraron órdenes válidas en el archivo', 'details': errors}), 400
 
-        # Reemplazar datos en el repositorio en memoria
+        # Agregar nuevas órdenes al repositorio (sin borrar las existentes)
         service = current_app.config.get('DASHBOARD_SERVICE')
         if service:
-            service._repo._ordenes = ordenes
+            service._repo._ordenes.extend(ordenes)
 
         return jsonify({
             'success': True,
