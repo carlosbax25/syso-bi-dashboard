@@ -21,6 +21,56 @@ def descargar_formato():
     )
 
 
+@gestion_bp.route('/gestion/registrar', methods=['POST'])
+def registrar_orden():
+    """Registra una orden individual desde el formulario."""
+    if not session.get('user'):
+        return jsonify({'error': 'No autorizado'}), 401
+
+    from datetime import date
+    from models.orden import Orden
+
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No se recibieron datos'}), 400
+
+        def parse_date(val):
+            if not val:
+                return None
+            try:
+                return date.fromisoformat(val[:10])
+            except ValueError:
+                return None
+
+        service = current_app.config.get('DASHBOARD_SERVICE')
+        next_id = len(service._repo._ordenes) + 1 if service else 1
+
+        orden = Orden(
+            id=next_id,
+            fecha=parse_date(data.get('fecha')) or date.today(),
+            arl=data.get('arl', '').strip(),
+            empresa=data.get('empresa', '').strip(),
+            tipo_servicio=data.get('tipo_servicio', '').strip(),
+            programa=data.get('programa', '').strip(),
+            tarea=data.get('tarea', '').strip(),
+            cantidad_trabajadores=int(data.get('trabajadores', 1)),
+            estado=data.get('estado', 'Recibida').strip(),
+            valor_facturado=float(data.get('valor', 0)),
+            responsable=data.get('responsable', '').strip(),
+            fecha_ejecucion=parse_date(data.get('fecha_ejecucion')),
+            fecha_facturacion=parse_date(data.get('fecha_facturacion')),
+        )
+
+        if service:
+            service._repo._ordenes.append(orden)
+
+        return jsonify({'success': True, 'message': f'Orden #{next_id} registrada exitosamente'})
+
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
 @gestion_bp.route('/gestion/upload', methods=['POST'])
 def upload_excel():
     """Recibe un archivo Excel con órdenes y lo procesa.
